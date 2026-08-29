@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import type { User, Role, Permission } from "@/types";
-import { authApi, setAccessToken, getAccessToken, type LoginResponse } from "./api";
+import { authApi, setTokens, type LoginResponse } from "./api";
 
 interface AuthState {
   user: User | null;
@@ -76,9 +76,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return false;
       }
 
-      const { user: apiUser, access_token } = result.data;
+      const { user: apiUser, access_token, refresh_token } = result.data;
 
-      setAccessToken(access_token);
+      setTokens(access_token, refresh_token);
 
       const user = mapApiUserToUser(apiUser);
       const role = buildRole(apiUser);
@@ -106,7 +106,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch {
       // Continue with local logout even if API fails
     } finally {
-      setAccessToken(null);
+      setTokens(null, null);
       set({
         user: null,
         role: null,
@@ -134,7 +134,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         });
       }
     } catch {
-      setAccessToken(null);
+      setTokens(null, null);
       set({
         user: null,
         role: null,
