@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
-  Mail,
+  User,
   Lock,
   Eye,
   EyeOff,
@@ -19,10 +19,9 @@ import { useAuthStore } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 const loginSchema = z.object({
-  email: z
+  login: z
     .string()
-    .min(1, "Email is required")
-    .email("Please enter a valid email address"),
+    .min(1, "Email, username or employee code is required"),
   password: z
     .string()
     .min(1, "Password is required")
@@ -48,7 +47,7 @@ export default function LoginPage() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      login: "",
       password: "",
       rememberMe: false,
     },
@@ -59,7 +58,7 @@ export default function LoginPage() {
     clearError();
     setIsLoading(true);
 
-    const success = await login(data.email, data.password);
+    const success = await login(data.login, data.password);
 
     if (success) {
       router.push("/dashboard");
@@ -143,35 +142,35 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
-            {/* Email */}
+            {/* Login Field */}
             <div>
               <label
-                htmlFor="email"
+                htmlFor="login"
                 className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
               >
-                Email address
+                Email, Username or Employee Code
               </label>
               <div className="relative">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-                  <Mail className="h-4 w-4 text-gray-400" />
+                  <User className="h-4 w-4 text-gray-400" />
                 </div>
                 <input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="you@example.com"
-                  {...register("email")}
+                  id="login"
+                  type="text"
+                  autoComplete="username"
+                  placeholder="Enter email, username or code"
+                  {...register("login")}
                   className={cn(
                     "block w-full rounded-xl border bg-white py-2.5 pl-10 pr-3.5 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30 dark:bg-[#1A1D2E] dark:text-white dark:placeholder:text-gray-500",
-                    errors.email
+                    errors.login
                       ? "border-red-500 focus:border-red-500"
                       : "border-gray-200 focus:border-[#FF6B00] dark:border-white/10"
                   )}
                 />
               </div>
-              {errors.email && (
+              {errors.login && (
                 <p className="mt-1.5 text-xs text-red-500">
-                  {errors.email.message}
+                  {errors.login.message}
                 </p>
               )}
             </div>
