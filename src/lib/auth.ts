@@ -124,7 +124,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   fetchUser: async () => {
     try {
-      const response = await authService.me();
+      let response = await authService.me();
+
+      if (response.status === 401) {
+        try {
+          const refreshRes = await authService.refresh();
+          if (refreshRes.data.status === "success") {
+            setAccessToken(refreshRes.data.data.access_token);
+            response = await authService.me();
+          }
+        } catch {
+          setAccessToken(null);
+          set({ user: null, role: null, permissions: [], isAuthenticated: false });
+          return;
+        }
+      }
+
       const result = response.data;
 
       if (result.status === "success" && result.data) {
