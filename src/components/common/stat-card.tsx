@@ -16,12 +16,12 @@ function StatCard({ icon, value, label, change, className }: StatCardProps) {
   return (
     <div
       className={cn(
-        "rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900",
+        "rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-white/5 dark:bg-[#1A1D2E]",
         className
       )}
     >
       <div className="flex items-center justify-between">
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#EAF7F1] text-[#168B61] dark:bg-[#0F684A]/20 dark:text-[#4ADE80]">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#FF6B00]/10 text-[#FF6B00]">
           {icon}
         </div>
         {change !== undefined && (
@@ -29,8 +29,8 @@ function StatCard({ icon, value, label, change, className }: StatCardProps) {
             className={cn(
               "flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
               isPositive
-                ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                : "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                ? "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400"
+                : "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400"
             )}
           >
             {isPositive ? (
@@ -43,7 +43,7 @@ function StatCard({ icon, value, label, change, className }: StatCardProps) {
         )}
       </div>
       <div className="mt-4">
-        <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+        <p className="text-2xl font-bold text-gray-900 dark:text-white">
           {value}
         </p>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{label}</p>

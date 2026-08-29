@@ -57,26 +57,26 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 const variantConfig = {
   success: {
     icon: CheckCircle,
-    bg: "bg-green-50 border-green-200 dark:bg-green-900/30 dark:border-green-800",
-    text: "text-green-800 dark:text-green-200",
+    bg: "bg-green-50 border-green-200 dark:bg-green-500/10 dark:border-green-500/20",
+    text: "text-green-800 dark:text-green-400",
     iconColor: "text-green-500",
   },
   error: {
     icon: AlertCircle,
-    bg: "bg-red-50 border-red-200 dark:bg-red-900/30 dark:border-red-800",
-    text: "text-red-800 dark:text-red-200",
+    bg: "bg-red-50 border-red-200 dark:bg-red-500/10 dark:border-red-500/20",
+    text: "text-red-800 dark:text-red-400",
     iconColor: "text-red-500",
   },
   warning: {
     icon: AlertTriangle,
-    bg: "bg-amber-50 border-amber-200 dark:bg-amber-900/30 dark:border-amber-800",
-    text: "text-amber-800 dark:text-amber-200",
+    bg: "bg-amber-50 border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/20",
+    text: "text-amber-800 dark:text-amber-400",
     iconColor: "text-amber-500",
   },
   info: {
     icon: Info,
-    bg: "bg-blue-50 border-blue-200 dark:bg-blue-900/30 dark:border-blue-800",
-    text: "text-blue-800 dark:text-blue-200",
+    bg: "bg-blue-50 border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/20",
+    text: "text-blue-800 dark:text-blue-400",
     iconColor: "text-blue-500",
   },
 };
@@ -94,7 +94,7 @@ function ToastItem({
   return (
     <div
       className={cn(
-        "pointer-events-auto flex w-80 items-start gap-3 rounded-lg border p-4 shadow-lg animate-in slide-in-from-right-full",
+        "pointer-events-auto flex w-80 items-start gap-3 rounded-xl border p-4 shadow-lg animate-in slide-in-from-right-full",
         config.bg
       )}
     >

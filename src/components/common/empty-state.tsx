@@ -22,10 +22,10 @@ function EmptyState({ icon, title, description, action, className }: EmptyStateP
         className
       )}
     >
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500">
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 text-gray-400 dark:bg-white/5 dark:text-gray-500">
         {icon || <Inbox className="h-8 w-8" />}
       </div>
-      <h3 className="mt-4 text-lg font-semibold text-gray-900 dark:text-gray-100">
+      <h3 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
         {title}
       </h3>
       {description && (

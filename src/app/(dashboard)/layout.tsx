@@ -25,14 +25,14 @@ export default function DashboardLayout({
 
   if (!isAuthenticated) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <div className="flex h-screen items-center justify-center bg-[#F5F5F5] dark:bg-[#0F1117]">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#FF6B00] border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background dark:bg-gray-950">
+    <div className="min-h-screen bg-[#F5F5F5] dark:bg-[#0F1117]">
       <Sidebar />
       <div
         className={cn(
