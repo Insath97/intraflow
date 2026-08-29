@@ -277,7 +277,7 @@ export default function RolesPage() {
             <Card key={role.id} className="group relative overflow-hidden">
               <div className="p-6">
                 <div className="mb-4 flex items-start justify-between">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#EAF7F1] text-[#168B61] dark:bg-[#0F684A]/20 dark:text-[#4ADE80]">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FFF3EB] text-[#FF6B00] dark:bg-[#E55A00]/20 dark:text-[#FF9A5C]">
                     <Shield className="h-5 w-5" />
                   </div>
                   <StatusBadge status={role.status} />
@@ -367,7 +367,7 @@ export default function RolesPage() {
               placeholder="Brief description of this role"
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="flex min-h-[80px] w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#168B61] focus-visible:ring-offset-1 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-400"
+              className="flex min-h-[80px] w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00] focus-visible:ring-offset-1 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-400"
             />
           </FormField>
 

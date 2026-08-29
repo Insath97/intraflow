@@ -447,9 +447,9 @@ export default function CreatePersonPage() {
                       className={cn(
                         "flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors",
                         isCompleted
-                          ? "border-[#168B61] bg-[#168B61] text-white"
+                          ? "border-[#FF6B00] bg-[#FF6B00] text-white"
                           : isActive
-                            ? "border-[#168B61] bg-[#EAF7F1] text-[#168B61]"
+                            ? "border-[#FF6B00] bg-[#FFF3EB] text-[#FF6B00]"
                             : "border-gray-300 bg-gray-100 text-gray-400 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-500"
                       )}
                     >
@@ -463,7 +463,7 @@ export default function CreatePersonPage() {
                       className={cn(
                         "text-xs font-medium hidden sm:block",
                         isActive
-                          ? "text-[#168B61]"
+                          ? "text-[#FF6B00]"
                           : isCompleted
                             ? "text-gray-600 dark:text-gray-300"
                             : "text-gray-400 dark:text-gray-500"
@@ -477,7 +477,7 @@ export default function CreatePersonPage() {
                       className={cn(
                         "h-0.5 flex-1 mx-2 mt-[-1.5rem] sm:mt-0",
                         isCompleted
-                          ? "bg-[#168B61]"
+                          ? "bg-[#FF6B00]"
                           : "bg-gray-200 dark:bg-gray-700"
                       )}
                     />
@@ -1018,7 +1018,7 @@ export default function CreatePersonPage() {
                         {formData.assistanceRequired.map((a) => (
                           <span
                             key={a}
-                            className="rounded-full bg-[#EAF7F1] px-2.5 py-0.5 text-xs font-medium text-[#168B61] dark:bg-[#0F684A]/20 dark:text-[#4ADE80]"
+                            className="rounded-full bg-[#FFF3EB] px-2.5 py-0.5 text-xs font-medium text-[#FF6B00] dark:bg-[#E55A00]/20 dark:text-[#FF9A5C]"
                           >
                             {a}
                           </span>

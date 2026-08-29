@@ -366,7 +366,7 @@ export default function PersonsPage() {
                       onClick={() => router.push(`/persons/${person.id}`)}
                     >
                       <td className="px-4 py-3">
-                        <span className="font-medium text-[#168B61] dark:text-[#4ADE80]">
+                        <span className="font-medium text-[#FF6B00] dark:text-[#FF9A5C]">
                           {person.registrationNo}
                         </span>
                       </td>

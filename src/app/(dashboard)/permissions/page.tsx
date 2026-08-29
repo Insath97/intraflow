@@ -85,7 +85,7 @@ export default function PermissionsPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="p-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#EAF7F1] text-[#168B61] dark:bg-[#0F684A]/20 dark:text-[#4ADE80]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FFF3EB] text-[#FF6B00] dark:bg-[#E55A00]/20 dark:text-[#FF9A5C]">
               <Key className="h-5 w-5" />
             </div>
             <div>
@@ -98,7 +98,7 @@ export default function PermissionsPage() {
         </Card>
         <Card className="p-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#EAF7F1] text-[#168B61] dark:bg-[#0F684A]/20 dark:text-[#4ADE80]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FFF3EB] text-[#FF6B00] dark:bg-[#E55A00]/20 dark:text-[#FF9A5C]">
               <Shield className="h-5 w-5" />
             </div>
             <div>
@@ -112,7 +112,7 @@ export default function PermissionsPage() {
         {PERMISSION_GROUPS.slice(0, 2).map((group) => (
           <Card key={group.name} className="p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#EAF7F1] text-[#168B61] dark:bg-[#0F684A]/20 dark:text-[#4ADE80]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FFF3EB] text-[#FF6B00] dark:bg-[#E55A00]/20 dark:text-[#FF9A5C]">
                 <Shield className="h-5 w-5" />
               </div>
               <div>
@@ -152,7 +152,7 @@ export default function PermissionsPage() {
                 className="flex w-full items-center justify-between px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#EAF7F1] text-[#168B61] dark:bg-[#0F684A]/20 dark:text-[#4ADE80]">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FFF3EB] text-[#FF6B00] dark:bg-[#E55A00]/20 dark:text-[#FF9A5C]">
                     <Icon className="h-5 w-5" />
                   </div>
                   <div>
@@ -195,8 +195,8 @@ export default function PermissionsPage() {
                         >
                           <td className="px-6 py-3">
                             <div className="flex items-center gap-2">
-                              <div className="flex h-6 w-6 items-center justify-center rounded bg-green-50 dark:bg-green-900/20">
-                                <Key className="h-3 w-3 text-green-600 dark:text-green-400" />
+                              <div className="flex h-6 w-6 items-center justify-center rounded bg-orange-50 dark:bg-orange-900/20">
+                                <Key className="h-3 w-3 text-orange-600 dark:text-orange-400" />
                               </div>
                               <code className="text-sm font-mono font-medium text-gray-800 dark:text-gray-200">
                                 {perm.name}

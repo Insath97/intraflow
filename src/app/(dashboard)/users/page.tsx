@@ -272,7 +272,7 @@ export default function UsersPage() {
       header: "Name",
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#EAF7F1] text-xs font-medium text-[#168B61] dark:bg-[#0F684A]/20 dark:text-[#4ADE80]">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FFF3EB] text-xs font-medium text-[#FF6B00] dark:bg-[#E55A00]/20 dark:text-[#FF9A5C]">
             {row.original.name.charAt(0).toUpperCase()}
           </div>
           <div>
@@ -413,7 +413,7 @@ export default function UsersPage() {
         >
           <div className="space-y-4">
             <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#EAF7F1] text-2xl font-bold text-[#168B61] dark:bg-[#0F684A]/20 dark:text-[#4ADE80]">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#FFF3EB] text-2xl font-bold text-[#FF6B00] dark:bg-[#E55A00]/20 dark:text-[#FF9A5C]">
                 {viewingUser.name.charAt(0).toUpperCase()}
               </div>
               <div>
