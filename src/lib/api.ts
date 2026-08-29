@@ -64,7 +64,7 @@ api.interceptors.response.use(
 export default api;
 
 export interface ApiResponse<T = unknown> {
-  success: boolean;
+  status: string;
   message: string;
   data: T;
 }

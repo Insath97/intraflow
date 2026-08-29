@@ -71,7 +71,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const response = await authApi.login({ login, password });
       const result = response.data;
 
-      if (!result.success) {
+      if (result.status !== "success") {
         set({ isLoading: false, error: result.message });
         return false;
       }
@@ -118,40 +118,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   fetchUser: async () => {
     try {
-      const token = getAccessToken();
+      const response = await authApi.me();
+      const result = response.data;
 
-      if (!token) {
-        const response = await authApi.me();
-        const result = response.data;
+      if (result.status === "success" && result.data) {
+        const apiUser = result.data;
+        const user = mapApiUserToUser(apiUser);
+        const role = buildRole(apiUser);
 
-        if (result.success && result.data) {
-          const apiUser = result.data;
-          const user = mapApiUserToUser(apiUser);
-          const role = buildRole(apiUser);
-
-          set({
-            user,
-            role,
-            permissions: apiUser.role?.permissions || [],
-            isAuthenticated: true,
-          });
-        }
-      } else {
-        const response = await authApi.me();
-        const result = response.data;
-
-        if (result.success && result.data) {
-          const apiUser = result.data;
-          const user = mapApiUserToUser(apiUser);
-          const role = buildRole(apiUser);
-
-          set({
-            user,
-            role,
-            permissions: apiUser.role?.permissions || [],
-            isAuthenticated: true,
-          });
-        }
+        set({
+          user,
+          role,
+          permissions: apiUser.role?.permissions || [],
+          isAuthenticated: true,
+        });
       }
     } catch {
       setAccessToken(null);
