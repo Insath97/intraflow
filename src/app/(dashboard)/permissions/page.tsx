@@ -63,34 +63,20 @@ export default function PermissionsPage() {
     setIsLoading(true);
     setError("");
     try {
-      const [permResponse, statsResponse, groupsResponse] = await Promise.allSettled([
-        permissionService.getList(),
-        permissionService.getStats(),
-        permissionService.getGroups(),
+      const [permRes, statsRes, groupsRes] = await Promise.allSettled([
+        permissionService.list(),
+        permissionService.stats(),
+        permissionService.groups(),
       ]);
 
-      if (permResponse.status === "fulfilled" && permResponse.value.status === "success" && permResponse.value.data) {
-        const items = permResponse.value.data.map((item) => ({
-          ...item,
-          description: item.display_name,
-          is_active: true,
-          created_at: "",
-          updated_at: "",
-        }));
-        setPermissions(items as PermissionItem[]);
+      if (permRes.status === "fulfilled" && permRes.value.data.status === "success") {
+        setPermissions(permRes.value.data.data);
       }
-      if (statsResponse.status === "fulfilled" && statsResponse.value.status === "success" && statsResponse.value.data) {
-        setStats(statsResponse.value.data);
+      if (statsRes.status === "fulfilled" && statsRes.value.data.status === "success") {
+        setStats(statsRes.value.data.data);
       }
-      if (groupsResponse.status === "fulfilled" && groupsResponse.value.status === "success" && groupsResponse.value.data) {
-        setGroupNames(groupsResponse.value.data.map((g) => g.group_name));
-      }
-
-      const anyFailed = [permResponse, statsResponse, groupsResponse].some(
-        (r) => r.status === "rejected"
-      );
-      if (anyFailed) {
-        setError("Some data failed to load. Showing available data.");
+      if (groupsRes.status === "fulfilled" && groupsRes.value.data.status === "success") {
+        setGroupNames(groupsRes.value.data.data.map((g) => g.group_name));
       }
     } catch {
       setError("Failed to load permissions. Please try again.");

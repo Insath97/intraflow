@@ -1,4 +1,4 @@
-import api, { type ApiResponse } from "@/lib/api";
+import api from "@/lib/api";
 
 export interface PermissionItem {
   id: string;
@@ -20,21 +20,22 @@ export interface PermissionStats {
   inactive_permissions: number;
 }
 
-class PermissionService {
-  async getList(): Promise<ApiResponse<PermissionItem[]>> {
-    const response = await api.get<ApiResponse<PermissionItem[]>>("/permissions/list");
-    return response.data;
-  }
-
-  async getGroups(): Promise<ApiResponse<PermissionGroupItem[]>> {
-    const response = await api.get<ApiResponse<PermissionGroupItem[]>>("/permissions/groups");
-    return response.data;
-  }
-
-  async getStats(): Promise<ApiResponse<PermissionStats>> {
-    const response = await api.get<ApiResponse<PermissionStats>>("/permissions/stats");
-    return response.data;
-  }
+export interface ApiResponse<T = unknown> {
+  status: string;
+  message: string;
+  data: T;
 }
 
-export const permissionService = new PermissionService();
+export const permissionService = {
+  list: () =>
+    api.get<ApiResponse<PermissionItem[]>>("/permissions/list"),
+
+  groups: () =>
+    api.get<ApiResponse<PermissionGroupItem[]>>("/permissions/groups"),
+
+  stats: () =>
+    api.get<ApiResponse<PermissionStats>>("/permissions/stats"),
+
+  getById: (id: string) =>
+    api.get<ApiResponse<PermissionItem>>(`/permissions/${id}`),
+};

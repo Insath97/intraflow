@@ -1,8 +1,9 @@
 "use client";
 
 import { create } from "zustand";
-import type { User, Role, Permission } from "@/types";
-import { authApi, setAccessToken, type LoginResponse } from "./api";
+import type { User, Role } from "@/types";
+import { setAccessToken } from "@/lib/api";
+import { authService, type LoginResponse } from "@/services/auth.service";
 
 interface AuthState {
   user: User | null;
@@ -35,11 +36,13 @@ function mapApiUserToUser(apiUser: LoginResponse["user"]): User {
 }
 
 function buildRole(apiUser: LoginResponse["user"]): Role {
+  const perms = apiUser.role?.permissions || [];
+  const permissionIds = perms.map((p) => p.display_name || p.permission_name);
   return apiUser.role
     ? {
         id: apiUser.role.id,
         name: apiUser.role.name,
-        permissionIds: apiUser.role.permissions || [],
+        permissionIds,
         description: "",
         status: "active",
         createdAt: new Date().toISOString(),
@@ -68,7 +71,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const response = await authApi.login({ login, password });
+      const response = await authService.login({ login, password });
       const result = response.data;
 
       if (result.status !== "success") {
@@ -82,11 +85,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       const user = mapApiUserToUser(apiUser);
       const role = buildRole(apiUser);
+      const permissions = (apiUser.role?.permissions || []).map(
+        (p) => p.display_name || p.permission_name
+      );
 
       set({
         user,
         role,
-        permissions: apiUser.role?.permissions || [],
+        permissions,
         isAuthenticated: true,
         isLoading: false,
       });
@@ -102,7 +108,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   logout: async () => {
     try {
-      await authApi.logout();
+      await authService.logout();
     } catch {
       // Continue with local logout even if API fails
     } finally {
@@ -118,18 +124,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   fetchUser: async () => {
     try {
-      const response = await authApi.me();
+      const response = await authService.me();
       const result = response.data;
 
       if (result.status === "success" && result.data) {
         const apiUser = result.data;
         const user = mapApiUserToUser(apiUser);
         const role = buildRole(apiUser);
+        const permissions = (apiUser.role?.permissions || []).map(
+          (p) => p.display_name || p.permission_name
+        );
 
         set({
           user,
           role,
-          permissions: apiUser.role?.permissions || [],
+          permissions,
           isAuthenticated: true,
         });
       }
