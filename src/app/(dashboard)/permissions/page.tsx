@@ -89,7 +89,7 @@ export default function PermissionsPage() {
     setError("");
     try {
       const [permRes, groupsRes] = await Promise.allSettled([
-        permissionService.getAll({ page: 1, size: 500 }),
+        permissionService.getAll(),
         permissionService.groups(),
       ]);
 
@@ -97,7 +97,8 @@ export default function PermissionsPage() {
         setPermissions(permRes.value.data.data.items);
       }
       if (groupsRes.status === "fulfilled" && groupsRes.value.data.status === "success") {
-        setGroupNames(groupsRes.value.data.data.map((g) => g.group_name));
+        const unique = [...new Set(groupsRes.value.data.data.map((g) => g.group_name))];
+        setGroupNames(unique);
       }
     } catch {
       setError("Failed to load permissions. Please try again.");
@@ -351,7 +352,7 @@ export default function PermissionsPage() {
               size="sm"
               onClick={() => setShowFilters(!showFilters)}
               className={cn(
-                "relative",
+                "relative min-w-[120px]",
                 showFilters && "border-[#FF6B00] text-[#FF6B00]"
               )}
             >
