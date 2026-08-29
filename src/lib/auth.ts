@@ -2,17 +2,36 @@
 
 import { create } from "zustand";
 import type { User, Role, Permission } from "@/types";
-import { PERMISSION_GROUPS } from "./constants";
+import { authApi, type LoginResponse } from "./api";
 
 interface AuthState {
   user: User | null;
   role: Role | null;
   permissions: string[];
   isAuthenticated: boolean;
-  login: (email: string, password: string) => boolean;
-  logout: () => void;
+  isLoading: boolean;
+  error: string | null;
+  login: (login: string, password: string) => Promise<boolean>;
+  logout: () => Promise<void>;
+  fetchUser: () => Promise<void>;
+  clearError: () => void;
   hasPermission: (permission: string) => boolean;
   hasAnyPermission: (permissions: string[]) => boolean;
+}
+
+function mapApiUserToUser(apiUser: LoginResponse["user"]): User {
+  return {
+    id: apiUser.id,
+    name: apiUser.full_name,
+    email: apiUser.email,
+    employeeId: apiUser.employee_code,
+    phone: "",
+    avatar: apiUser.profile_image_path || "",
+    roleId: apiUser.role?.id || "",
+    status: "active",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -20,62 +39,121 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   role: null,
   permissions: [],
   isAuthenticated: false,
+  isLoading: false,
+  error: null,
 
-  login: (email: string, _password: string) => {
+  login: async (login: string, password: string) => {
+    set({ isLoading: true, error: null });
+
     try {
-      const usersData = localStorage.getItem("mis_users");
-      const rolesData = localStorage.getItem("mis_roles");
+      const response = await authApi.login({ login, password });
+      const result = response.data;
 
-      if (!usersData || !rolesData) return false;
+      if (!result.success) {
+        set({ isLoading: false, error: result.message });
+        return false;
+      }
 
-      const users: User[] = JSON.parse(usersData);
-      const roles: Role[] = JSON.parse(rolesData);
-
-      const user = users.find(
-        (u) => u.email === email && u.status === "active"
-      );
-      if (!user) return false;
-
-      // For prototype: accept any password for demo users, but validate format
-      if (_password.length < 6) return false;
-
-      const role = roles.find((r) => r.id === user.roleId);
-      const permissions = role ? role.permissionIds : [];
-
-      // Update last login
-      user.lastLogin = new Date().toISOString();
-      const updatedUsers = users.map((u) =>
-        u.id === user.id ? user : u
-      );
-      localStorage.setItem("mis_users", JSON.stringify(updatedUsers));
-
-      localStorage.setItem(
-        "mis_auth",
-        JSON.stringify({ userId: user.id })
-      );
+      const { user: apiUser } = result.data;
+      const user = mapApiUserToUser(apiUser);
+      const role: Role = apiUser.role
+        ? {
+            id: apiUser.role.id,
+            name: apiUser.role.name,
+            permissionIds: apiUser.role.permissions || [],
+            description: "",
+            status: "active",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }
+        : {
+            id: "",
+            name: "",
+            permissionIds: [],
+            description: "",
+            status: "active",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
 
       set({
         user,
-        role: role || null,
-        permissions,
+        role,
+        permissions: apiUser.role?.permissions || [],
         isAuthenticated: true,
+        isLoading: false,
       });
 
       return true;
-    } catch {
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Login failed. Please try again.";
+      set({ isLoading: false, error: message });
       return false;
     }
   },
 
-  logout: () => {
-    localStorage.removeItem("mis_auth");
-    set({
-      user: null,
-      role: null,
-      permissions: [],
-      isAuthenticated: false,
-    });
+  logout: async () => {
+    try {
+      await authApi.logout();
+    } catch {
+      // Continue with local logout even if API fails
+    } finally {
+      set({
+        user: null,
+        role: null,
+        permissions: [],
+        isAuthenticated: false,
+      });
+    }
   },
+
+  fetchUser: async () => {
+    try {
+      const response = await authApi.me();
+      const result = response.data;
+
+      if (result.success && result.data) {
+        const apiUser = result.data;
+        const user = mapApiUserToUser(apiUser);
+        const role: Role = apiUser.role
+          ? {
+              id: apiUser.role.id,
+              name: apiUser.role.name,
+              permissionIds: apiUser.role.permissions || [],
+              description: "",
+              status: "active",
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            }
+          : {
+              id: "",
+              name: "",
+              permissionIds: [],
+              description: "",
+              status: "active",
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            };
+
+        set({
+          user,
+          role,
+          permissions: apiUser.role?.permissions || [],
+          isAuthenticated: true,
+        });
+      }
+    } catch {
+      set({
+        user: null,
+        role: null,
+        permissions: [],
+        isAuthenticated: false,
+      });
+    }
+  },
+
+  clearError: () => set({ error: null }),
 
   hasPermission: (permission: string) => {
     const { permissions } = get();
@@ -87,39 +165,3 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     return perms.some((p) => permissions.includes(p));
   },
 }));
-
-export function initializeAuth() {
-  if (typeof window === "undefined") return;
-
-  try {
-    const authData = localStorage.getItem("mis_auth");
-    if (!authData) return;
-
-    const { userId } = JSON.parse(authData);
-    const usersData = localStorage.getItem("mis_users");
-    const rolesData = localStorage.getItem("mis_roles");
-
-    if (!usersData || !rolesData) return;
-
-    const users: User[] = JSON.parse(usersData);
-    const roles: Role[] = JSON.parse(rolesData);
-
-    const user = users.find((u) => u.id === userId && u.status === "active");
-    if (!user) {
-      localStorage.removeItem("mis_auth");
-      return;
-    }
-
-    const role = roles.find((r) => r.id === user.roleId);
-    const permissions = role ? role.permissionIds : [];
-
-    useAuthStore.setState({
-      user,
-      role: role || null,
-      permissions,
-      isAuthenticated: true,
-    });
-  } catch {
-    localStorage.removeItem("mis_auth");
-  }
-}

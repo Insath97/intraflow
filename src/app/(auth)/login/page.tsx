@@ -35,6 +35,8 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const router = useRouter();
   const login = useAuthStore((s) => s.login);
+  const authError = useAuthStore((s) => s.error);
+  const clearError = useAuthStore((s) => s.clearError);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -54,11 +56,10 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     setError("");
+    clearError();
     setIsLoading(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    const success = login(data.email, data.password);
+    const success = await login(data.email, data.password);
 
     if (success) {
       router.push("/dashboard");
@@ -132,10 +133,12 @@ export default function LoginPage() {
           </div>
 
           {/* Error Message */}
-          {error && (
+          {(error || authError) && (
             <div className="mb-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-500/20 dark:bg-red-500/10">
               <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" />
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+              <p className="text-sm text-red-600 dark:text-red-400">
+                {error || authError}
+              </p>
             </div>
           )}
 
@@ -256,19 +259,16 @@ export default function LoginPage() {
           {/* Demo Credentials */}
           <div className="mt-8 rounded-xl border border-gray-200 bg-white p-4 dark:border-white/10 dark:bg-[#1A1D2E]">
             <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
-              Demo Credentials
+              Backend Credentials
             </p>
             <div className="space-y-1 text-xs text-gray-700 dark:text-gray-300">
               <p>
-                <span className="font-medium">Admin:</span>{" "}
-                admin@example.com
+                <span className="font-medium">Email:</span>{" "}
+                dev@localhost.com
               </p>
               <p>
-                <span className="font-medium">Operator:</span>{" "}
-                nirosha@example.com
-              </p>
-              <p className="text-gray-500 dark:text-gray-500">
-                Password: any 6+ characters
+                <span className="font-medium">Password:</span>{" "}
+                password123
               </p>
             </div>
           </div>

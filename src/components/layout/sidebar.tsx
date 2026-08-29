@@ -8,6 +8,7 @@ import {
   ChevronRight,
   LogOut,
   Heart,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/lib/auth";
@@ -44,14 +45,17 @@ export function Sidebar() {
     setMobileSidebarOpen,
   } = useAppStore();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = () => {
     setShowLogoutModal(true);
   };
 
-  const confirmLogout = () => {
+  const confirmLogout = async () => {
+    setIsLoggingOut(true);
+    await useAuthStore.getState().logout();
     setShowLogoutModal(false);
-    useAuthStore.getState().logout();
+    setIsLoggingOut(false);
   };
 
   useEffect(() => {
@@ -226,31 +230,37 @@ export function Sidebar() {
 
       {/* Logout Confirmation Modal */}
       {showLogoutModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="mx-4 w-full max-w-sm rounded-2xl border border-gray-700 bg-[#252836] p-6 shadow-2xl">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10 mx-auto">
-              <LogOut className="h-6 w-6 text-red-500" />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-xs rounded-2xl border border-gray-700 bg-[#252836] p-5 shadow-2xl sm:max-w-sm sm:p-6">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500/10 mx-auto sm:h-12 sm:w-12">
+              <LogOut className="h-5 w-5 text-red-500 sm:h-6 sm:w-6" />
             </div>
-            <h3 className="mt-4 text-center text-lg font-semibold text-white">
+            <h3 className="mt-3 text-center text-base font-semibold text-white sm:mt-4 sm:text-lg">
               Confirm Logout
             </h3>
-            <p className="mt-2 text-center text-sm text-white/50">
-              Are you sure you want to sign out of the system?
+            <p className="mt-1.5 text-center text-xs text-white/50 sm:mt-2 sm:text-sm">
+              Are you sure you want to sign out?
             </p>
-            <div className="mt-6 flex gap-3">
+            <div className="mt-4 flex gap-2.5 sm:mt-6 sm:gap-3">
               <button
                 type="button"
                 onClick={() => setShowLogoutModal(false)}
-                className="flex-1 rounded-xl border border-gray-600 bg-transparent px-4 py-2.5 text-sm font-medium text-white/70 transition-colors hover:bg-white/5"
+                disabled={isLoggingOut}
+                className="flex-1 rounded-xl border border-gray-600 bg-transparent px-3 py-2 text-xs font-medium text-white/70 transition-colors hover:bg-white/5 disabled:opacity-50 sm:px-4 sm:py-2.5 sm:text-sm"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={confirmLogout}
-                className="flex-1 rounded-xl bg-[#FF6B00] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#E55A00]"
+                disabled={isLoggingOut}
+                className="flex-1 rounded-xl bg-[#FF6B00] px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-[#E55A00] disabled:opacity-50 sm:px-4 sm:py-2.5 sm:text-sm"
               >
-                Yes, Sign Out
+                {isLoggingOut ? (
+                  <Loader2 className="mx-auto h-4 w-4 animate-spin" />
+                ) : (
+                  "Yes, Sign Out"
+                )}
               </button>
             </div>
           </div>

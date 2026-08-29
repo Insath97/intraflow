@@ -10,6 +10,7 @@ import {
   User,
   Settings,
   Search,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/lib/auth";
@@ -22,6 +23,7 @@ export function Header() {
   const { toggleMobileSidebar } = useAppStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -55,9 +57,11 @@ export function Header() {
     setShowLogoutModal(true);
   };
 
-  const confirmLogout = () => {
+  const confirmLogout = async () => {
+    setIsLoggingOut(true);
+    await logout();
     setShowLogoutModal(false);
-    logout();
+    setIsLoggingOut(false);
     router.push("/login");
   };
 
@@ -204,31 +208,37 @@ export function Header() {
 
       {/* Logout Confirmation Modal */}
       {showLogoutModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="mx-4 w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl dark:border-white/10 dark:bg-[#1A1D2E]">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mx-auto dark:bg-red-500/10">
-              <LogOut className="h-6 w-6 text-red-500" />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-xs rounded-2xl border border-gray-200 bg-white p-5 shadow-2xl sm:max-w-sm sm:p-6 dark:border-white/10 dark:bg-[#1A1D2E]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 mx-auto sm:h-12 sm:w-12 dark:bg-red-500/10">
+              <LogOut className="h-5 w-5 text-red-500 sm:h-6 sm:w-6" />
             </div>
-            <h3 className="mt-4 text-center text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 className="mt-3 text-center text-base font-semibold text-gray-900 sm:mt-4 sm:text-lg dark:text-white">
               Confirm Logout
             </h3>
-            <p className="mt-2 text-center text-sm text-gray-500 dark:text-gray-400">
-              Are you sure you want to sign out of the system?
+            <p className="mt-1.5 text-center text-xs text-gray-500 sm:mt-2 sm:text-sm dark:text-gray-400">
+              Are you sure you want to sign out?
             </p>
-            <div className="mt-6 flex gap-3">
+            <div className="mt-4 flex gap-2.5 sm:mt-6 sm:gap-3">
               <button
                 type="button"
                 onClick={() => setShowLogoutModal(false)}
-                className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-white/10 dark:bg-transparent dark:text-gray-300 dark:hover:bg-white/5"
+                disabled={isLoggingOut}
+                className="flex-1 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 sm:px-4 sm:py-2.5 sm:text-sm dark:border-white/10 dark:bg-transparent dark:text-gray-300 dark:hover:bg-white/5"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={confirmLogout}
-                className="flex-1 rounded-xl bg-[#FF6B00] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#E55A00]"
+                disabled={isLoggingOut}
+                className="flex-1 rounded-xl bg-[#FF6B00] px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-[#E55A00] disabled:opacity-50 sm:px-4 sm:py-2.5 sm:text-sm"
               >
-                Yes, Sign Out
+                {isLoggingOut ? (
+                  <Loader2 className="mx-auto h-4 w-4 animate-spin" />
+                ) : (
+                  "Yes, Sign Out"
+                )}
               </button>
             </div>
           </div>
