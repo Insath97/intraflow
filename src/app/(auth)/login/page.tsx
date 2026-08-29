@@ -11,14 +11,14 @@ import {
   Eye,
   EyeOff,
   LogIn,
-  Heart,
   AlertCircle,
   Loader2,
+  FolderKanban,
+  CheckSquare,
+  Clock,
+  Bell,
   Shield,
   BarChart3,
-  Users,
-  MapPin,
-  CheckCircle2,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -38,10 +38,12 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 const features = [
-  { icon: Shield, label: "Secure Data Protection" },
-  { icon: Users, label: "Centralized User Management" },
-  { icon: BarChart3, label: "Real-time Analytics & Reports" },
-  { icon: MapPin, label: "Island-wide Coverage" },
+  { icon: FolderKanban, label: "Project & Task Management" },
+  { icon: CheckSquare, label: "Daily Updates & Work Tracking" },
+  { icon: Clock, label: "Leave, WFH & Request Approvals" },
+  { icon: Bell, label: "Real-time Notifications" },
+  { icon: BarChart3, label: "Reports & Analytics" },
+  { icon: Shield, label: "Role-based Access Control" },
 ];
 
 export default function LoginPage() {
@@ -87,11 +89,11 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen">
       {/* Left Panel - Branding */}
-      <div className="hidden w-1/2 bg-gradient-to-br from-[#1A1D2E] via-[#252836] to-[#0F1117] lg:flex lg:flex-col lg:items-center lg:justify-center dark:from-[#1A1D2E] dark:via-[#252836] dark:to-[#0F1117]">
+      <div className="hidden w-1/2 bg-gradient-to-br from-[#1A1D2E] via-[#252836] to-[#0F1117] lg:flex lg:flex-col lg:items-center lg:justify-center">
         <div className="mx-auto max-w-md px-8 text-center">
           {/* Logo */}
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#FF6B00] shadow-lg shadow-[#FF6B00]/20">
-            <Heart className="h-8 w-8 text-white" />
+            <FolderKanban className="h-8 w-8 text-white" />
           </div>
 
           {/* Brand Name */}
@@ -99,20 +101,20 @@ export default function LoginPage() {
             IntraFlow
           </h1>
           <p className="mb-8 text-sm font-medium tracking-wider text-[#FF6B00] uppercase">
-            Persons with Disabilities Management System
+            IT Project & Work Management
           </p>
 
           {/* Features */}
-          <div className="space-y-4 text-left">
+          <div className="grid grid-cols-2 gap-3 text-left">
             {features.map((feature) => (
               <div
                 key={feature.label}
-                className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 backdrop-blur-sm"
+                className="flex items-center gap-2.5 rounded-xl bg-white/5 px-3 py-2.5 backdrop-blur-sm"
               >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#FF6B00]/10">
-                  <feature.icon className="h-4 w-4 text-[#FF6B00]" />
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#FF6B00]/10">
+                  <feature.icon className="h-3.5 w-3.5 text-[#FF6B00]" />
                 </div>
-                <span className="text-sm text-white/80">{feature.label}</span>
+                <span className="text-xs text-white/80">{feature.label}</span>
               </div>
             ))}
           </div>
@@ -120,16 +122,16 @@ export default function LoginPage() {
           {/* Stats */}
           <div className="mt-10 grid grid-cols-3 gap-4">
             <div className="rounded-xl bg-white/5 p-3 backdrop-blur-sm">
-              <p className="text-xl font-bold text-[#FF6B00]">10K+</p>
-              <p className="mt-0.5 text-[10px] text-white/40">Registered Users</p>
+              <p className="text-xl font-bold text-[#FF6B00]">50+</p>
+              <p className="mt-0.5 text-[10px] text-white/40">Active Projects</p>
             </div>
             <div className="rounded-xl bg-white/5 p-3 backdrop-blur-sm">
-              <p className="text-xl font-bold text-[#FF6B00]">25</p>
-              <p className="mt-0.5 text-[10px] text-white/40">Districts</p>
+              <p className="text-xl font-bold text-[#FF6B00]">200+</p>
+              <p className="mt-0.5 text-[10px] text-white/40">Team Members</p>
             </div>
             <div className="rounded-xl bg-white/5 p-3 backdrop-blur-sm">
-              <p className="text-xl font-bold text-[#FF6B00]">340+</p>
-              <p className="mt-0.5 text-[10px] text-white/40">DS Divisions</p>
+              <p className="text-xl font-bold text-[#FF6B00]">5K+</p>
+              <p className="mt-0.5 text-[10px] text-white/40">Tasks Completed</p>
             </div>
           </div>
         </div>
@@ -145,13 +147,13 @@ export default function LoginPage() {
         {/* Mobile Header */}
         <div className="mb-8 text-center lg:hidden">
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-[#FF6B00] shadow-lg shadow-[#FF6B00]/20">
-            <Heart className="h-7 w-7 text-white" />
+            <FolderKanban className="h-7 w-7 text-white" />
           </div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">
             IntraFlow
           </h1>
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            PWD Management System
+            IT Project & Work Management
           </p>
         </div>
 
