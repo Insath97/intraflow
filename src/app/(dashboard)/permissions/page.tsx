@@ -64,13 +64,13 @@ export default function PermissionsPage() {
     setError("");
     try {
       const [permRes, statsRes, groupsRes] = await Promise.allSettled([
-        permissionService.list(),
+        permissionService.getAll({ page: 1, size: 100 }),
         permissionService.stats(),
         permissionService.groups(),
       ]);
 
       if (permRes.status === "fulfilled" && permRes.value.data.status === "success") {
-        setPermissions(permRes.value.data.data);
+        setPermissions(permRes.value.data.data.items);
       }
       if (statsRes.status === "fulfilled" && statsRes.value.data.status === "success") {
         setStats(statsRes.value.data.data);
