@@ -7,7 +7,7 @@ import {
   Lock,
   ClipboardList,
   Settings,
-  Accessibility,
+  Heart,
   BarChart3,
   Home,
   UserCheck,
@@ -45,7 +45,7 @@ export const navigation: NavGroup[] = [
       {
         label: "All Persons",
         href: "/persons",
-        icon: Accessibility,
+        icon: Heart,
         permission: "persons.view",
       },
       {

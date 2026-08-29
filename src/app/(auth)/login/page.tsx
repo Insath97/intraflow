@@ -11,7 +11,7 @@ import {
   Eye,
   EyeOff,
   LogIn,
-  Accessibility,
+  Heart,
   AlertCircle,
   Loader2,
 } from "lucide-react";
@@ -77,7 +77,7 @@ export default function LoginPage() {
       <div className="hidden w-1/2 bg-gradient-to-br from-[#1A1D2E] via-[#252836] to-[#0F1117] lg:flex lg:flex-col lg:items-center lg:justify-center">
         <div className="mx-auto max-w-md px-8 text-center">
           <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-2xl bg-[#FF6B00]">
-            <Accessibility className="h-10 w-10 text-white" />
+            <Heart className="h-10 w-10 text-white" />
           </div>
           <h1 className="mb-3 text-3xl font-bold text-white">
             Persons with Disabilities
@@ -111,7 +111,7 @@ export default function LoginPage() {
         {/* Mobile Header */}
         <div className="mb-8 text-center lg:hidden">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-[#FF6B00]">
-            <Accessibility className="h-7 w-7 text-white" />
+            <Heart className="h-7 w-7 text-white" />
           </div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">
             IntraFlow

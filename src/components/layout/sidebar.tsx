@@ -7,7 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
-  Accessibility,
+  Heart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/lib/auth";
@@ -74,7 +74,7 @@ export function Sidebar() {
       >
         <div className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#FF6B00]">
-            <Accessibility className="h-4 w-4 text-white" />
+            <Heart className="h-4 w-4 text-white" />
           </div>
           {sidebarOpen && (
             <div className="min-w-0">
