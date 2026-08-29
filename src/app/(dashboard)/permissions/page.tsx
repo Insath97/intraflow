@@ -63,20 +63,27 @@ export default function PermissionsPage() {
     setIsLoading(true);
     setError("");
     try {
-      const [permResponse, statsResponse, groupsResponse] = await Promise.all([
+      const [permResponse, statsResponse, groupsResponse] = await Promise.allSettled([
         permissionService.getAll({ size: 1000 }),
         permissionService.getStats(),
         permissionService.getGroups(),
       ]);
 
-      if (permResponse.status === "success" && permResponse.data) {
-        setPermissions(permResponse.data.items);
+      if (permResponse.status === "fulfilled" && permResponse.value.status === "success" && permResponse.value.data) {
+        setPermissions(permResponse.value.data.items);
       }
-      if (statsResponse.status === "success" && statsResponse.data) {
-        setStats(statsResponse.data);
+      if (statsResponse.status === "fulfilled" && statsResponse.value.status === "success" && statsResponse.value.data) {
+        setStats(statsResponse.value.data);
       }
-      if (groupsResponse.status === "success" && groupsResponse.data) {
-        setGroupNames(groupsResponse.data.map((g) => g.group_name));
+      if (groupsResponse.status === "fulfilled" && groupsResponse.value.status === "success" && groupsResponse.value.data) {
+        setGroupNames(groupsResponse.value.data.map((g) => g.group_name));
+      }
+
+      const anyFailed = [permResponse, statsResponse, groupsResponse].some(
+        (r) => r.status === "rejected"
+      );
+      if (anyFailed) {
+        setError("Some data failed to load. Showing available data.");
       }
     } catch {
       setError("Failed to load permissions. Please try again.");
