@@ -4,4 +4,5 @@ export { RoleService } from './role.service';
 export { TerritoryService } from './territory.service';
 export { AuditLogService } from './audit-log.service';
 export { ReportService } from './report.service';
+export { permissionService } from './permission.service';
 export { seedData } from './seed';
