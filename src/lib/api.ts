@@ -1,123 +1,42 @@
 import axios from "axios";
 
-const API_BASE_URL = "";
-
-let accessToken: string | null = null;
-let refreshToken: string | null = null;
-let isRefreshing = false;
-let failedQueue: Array<{
-  resolve: (value: unknown) => void;
-  reject: (reason?: unknown) => void;
-}> = [];
-
-function processQueue(error: unknown) {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(undefined);
-    }
-  });
-  failedQueue = [];
-}
-
-export function setTokens(access: string | null, refresh: string | null) {
-  accessToken = access;
-  refreshToken = refresh;
-}
-
-export function getAccessToken() {
-  return accessToken;
-}
-
-export function getRefreshToken() {
-  return refreshToken;
-}
-
 const api = axios.create({
-  baseURL: API_BASE_URL,
-  withCredentials: true,
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1",
   headers: {
     "Content-Type": "application/json",
+    Accept: "application/json",
   },
+  withCredentials: true,
 });
 
-api.interceptors.request.use((config) => {
-  if (accessToken) {
-    config.headers.Authorization = `Bearer ${accessToken}`;
-  }
-  return config;
-});
+let accessToken: string | null = null;
+
+export const setAccessToken = (token: string | null) => {
+  accessToken = token;
+};
+
+export const getAccessToken = () => accessToken;
+
+api.interceptors.request.use(
+  (config) => {
+    const token = accessToken;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      if (typeof window !== "undefined" && window.location.pathname === "/login") {
-        return Promise.reject(error);
-      }
-
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        }).then(() => api(originalRequest));
-      }
-
-      originalRequest._retry = true;
-      isRefreshing = true;
-
-      try {
-        if (!refreshToken) {
-          throw new Error("No refresh token");
-        }
-
-        const refreshResponse = await axios.post(
-          `${API_BASE_URL}/api/v1/auth/refresh`,
-          {},
-          {
-            withCredentials: true,
-            headers: {
-              Authorization: `Bearer ${refreshToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        const newAccessToken = refreshResponse.data?.data?.access_token;
-        const newRefreshToken = refreshResponse.data?.data?.refresh_token;
-
-        if (newAccessToken) {
-          accessToken = newAccessToken;
-          if (newRefreshToken) {
-            refreshToken = newRefreshToken;
-          }
-          processQueue(null);
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          return api(originalRequest);
-        }
-
-        processQueue(error);
-        accessToken = null;
-        refreshToken = null;
-        if (typeof window !== "undefined") {
-          window.location.href = "/login";
-        }
-        return Promise.reject(error);
-      } catch {
-        processQueue(error);
-        accessToken = null;
-        refreshToken = null;
-        if (typeof window !== "undefined" && window.location.pathname !== "/login") {
-          window.location.href = "/login";
-        }
-        return Promise.reject(error);
-      } finally {
-        isRefreshing = false;
+  (error) => {
+    if (error.response?.status === 401) {
+      accessToken = null;
+      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+        window.location.href = "/login";
       }
     }
-
     return Promise.reject(error);
   }
 );
@@ -152,18 +71,17 @@ export interface LoginResponse {
     };
   };
   access_token: string;
-  refresh_token: string;
   token_type: string;
 }
 
 export const authApi = {
   login: (data: LoginPayload) =>
-    api.post<ApiResponse<LoginResponse>>("/api/v1/auth/login", data),
+    api.post<ApiResponse<LoginResponse>>("/auth/login", data),
 
-  logout: () => api.post<ApiResponse<null>>("/api/v1/auth/logout"),
+  logout: () => api.post<ApiResponse<null>>("/auth/logout"),
 
-  me: () => api.get<ApiResponse<LoginResponse["user"]>>("/api/v1/auth/me"),
+  me: () => api.get<ApiResponse<LoginResponse["user"]>>("/auth/me"),
 
   refresh: () =>
-    api.post<ApiResponse<{ access_token: string; refresh_token: string }>>("/api/v1/auth/refresh"),
+    api.post<ApiResponse<{ access_token: string }>>("/auth/refresh"),
 };
