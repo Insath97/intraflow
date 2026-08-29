@@ -64,13 +64,20 @@ export default function PermissionsPage() {
     setError("");
     try {
       const [permResponse, statsResponse, groupsResponse] = await Promise.allSettled([
-        permissionService.getAll({ size: 1000 }),
+        permissionService.getList(),
         permissionService.getStats(),
         permissionService.getGroups(),
       ]);
 
       if (permResponse.status === "fulfilled" && permResponse.value.status === "success" && permResponse.value.data) {
-        setPermissions(permResponse.value.data.items);
+        const items = permResponse.value.data.map((item) => ({
+          ...item,
+          description: item.display_name,
+          is_active: true,
+          created_at: "",
+          updated_at: "",
+        }));
+        setPermissions(items as PermissionItem[]);
       }
       if (statsResponse.status === "fulfilled" && statsResponse.value.status === "success" && statsResponse.value.data) {
         setStats(statsResponse.value.data);
