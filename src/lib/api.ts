@@ -10,6 +10,11 @@ const api = axios.create({
 });
 
 let accessToken: string | null = null;
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (token: string) => void;
+  reject: (err: unknown) => void;
+}> = [];
 
 if (typeof window !== "undefined") {
   accessToken = localStorage.getItem("access_token");
@@ -28,6 +33,17 @@ export const setAccessToken = (token: string | null) => {
 
 export const getAccessToken = () => accessToken;
 
+function processQueue(error: unknown, token: string | null) {
+  failedQueue.forEach((prom) => {
+    if (error || !token) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+}
+
 api.interceptors.request.use(
   (config) => {
     const token = accessToken;
@@ -41,17 +57,51 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+
     if (
       error.response?.status === 401 &&
-      typeof window !== "undefined" &&
-      window.location.pathname !== "/login" &&
-      !error.config?.url?.includes("/auth/me") &&
-      !error.config?.url?.includes("/auth/refresh")
+      !originalRequest._retry &&
+      !originalRequest.url?.includes("/auth/refresh")
     ) {
-      setAccessToken(null);
-      window.location.href = "/login";
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then((token) => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return api(originalRequest);
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const res = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"}/auth/refresh`,
+          {},
+          { withCredentials: true }
+        );
+
+        if (res.data.status === "success") {
+          const newToken = res.data.data.access_token;
+          setAccessToken(newToken);
+          processQueue(null, newToken);
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return api(originalRequest);
+        }
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        setAccessToken(null);
+        if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
+      } finally {
+        isRefreshing = false;
+      }
     }
+
     return Promise.reject(error);
   }
 );
