@@ -1,7 +1,9 @@
-export { UserService } from './user.service';
-export { PersonService } from './person.service';
-export { RoleService } from './role.service';
-export { TerritoryService } from './territory.service';
-export { AuditLogService } from './audit-log.service';
-export { ReportService } from './report.service';
-export { seedData } from './seed';
+export { authService } from "./auth.service";
+export { permissionService } from "./permission.service";
+export { UserService } from "./user.service";
+export { PersonService } from "./person.service";
+export { RoleService } from "./role.service";
+export { TerritoryService } from "./territory.service";
+export { AuditLogService } from "./audit-log.service";
+export { ReportService } from "./report.service";
+export { seedData } from "./seed";

@@ -169,7 +169,7 @@ function DataTableInner<TData, TValue>(
 
   if (loading) {
     return (
-      <div ref={ref} className={cn("rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900", className)}>
+      <div ref={ref} className={cn("rounded-2xl border border-gray-200 bg-white dark:border-white/5 dark:bg-[#1A1D2E]", className)}>
         <LoadingState message="Loading data..." />
       </div>
     );
@@ -230,13 +230,13 @@ function DataTableInner<TData, TValue>(
         </DropdownMenu>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
+      <div className="overflow-x-auto rounded-2xl border border-gray-200 dark:border-white/5">
         <table className="w-full text-sm">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr
                 key={headerGroup.id}
-                className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50"
+                className="border-b border-gray-100 bg-gray-50 dark:border-white/5 dark:bg-white/5"
               >
                 {headerGroup.headers.map((header) => (
                   <th
@@ -244,7 +244,7 @@ function DataTableInner<TData, TValue>(
                     className={cn(
                       "px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300",
                       header.column.getCanSort() &&
-                        "cursor-pointer select-none hover:text-gray-900 dark:hover:text-gray-100"
+                        "cursor-pointer select-none hover:text-gray-900 dark:hover:text-white"
                     )}
                     style={{ width: header.getSize() }}
                   >
@@ -282,9 +282,9 @@ function DataTableInner<TData, TValue>(
                 <tr
                   key={row.id}
                   className={cn(
-                    "border-b border-gray-100 transition-colors last:border-0 dark:border-gray-800",
-                    onRowClick && "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50",
-                    row.getIsSelected() && "bg-[#EAF7F1]/50 dark:bg-[#0F684A]/10"
+                    "border-b border-gray-50 transition-colors last:border-0 dark:border-white/5",
+                    onRowClick && "cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5",
+                    row.getIsSelected() && "bg-[#FF6B00]/5 dark:bg-[#FF6B00]/10"
                   )}
                   onClick={() => onRowClick?.(row.original)}
                 >

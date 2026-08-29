@@ -95,7 +95,7 @@ function Pagination({
               className={cn(
                 "h-8 w-8",
                 currentPage === page &&
-                  "bg-[#168B61] text-white hover:bg-[#0F684A]"
+                  "bg-[#FF6B00] text-white hover:bg-[#E55A00]"
               )}
               onClick={() => onPageChange(page)}
             >

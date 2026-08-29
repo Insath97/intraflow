@@ -72,8 +72,8 @@ export default function PersonDetailPage() {
         action: "Person registered",
         date: person.registeredDate,
         icon: User,
-        color: "text-[#168B61]",
-        bg: "bg-[#EAF7F1] dark:bg-[#0F684A]/20",
+        color: "text-[#FF6B00]",
+        bg: "bg-[#FFF3EB] dark:bg-[#E55A00]/20",
       },
       {
         id: "2",

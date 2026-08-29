@@ -3,14 +3,16 @@ import {
   Users,
   UserPlus,
   MapPin,
-  Shield,
-  Key,
-  FileText,
+  ShieldCheck,
+  Lock,
   ClipboardList,
   Settings,
-  UserCog,
-  Accessibility,
+  Heart,
   BarChart3,
+  Home,
+  UserCheck,
+  FileText,
+  Activity,
 } from "lucide-react";
 
 export interface NavItem {
@@ -41,13 +43,13 @@ export const navigation: NavGroup[] = [
     title: "PERSON MANAGEMENT",
     items: [
       {
-        label: "Persons",
+        label: "All Persons",
         href: "/persons",
-        icon: Accessibility,
+        icon: Heart,
         permission: "persons.view",
       },
       {
-        label: "Registration",
+        label: "Register Person",
         href: "/persons/create",
         icon: UserPlus,
         permission: "persons.create",
@@ -77,13 +79,13 @@ export const navigation: NavGroup[] = [
       {
         label: "Roles",
         href: "/roles",
-        icon: Shield,
+        icon: ShieldCheck,
         permission: "roles.view",
       },
       {
         label: "Permissions",
         href: "/permissions",
-        icon: Key,
+        icon: Lock,
         permission: "roles.view",
       },
     ],

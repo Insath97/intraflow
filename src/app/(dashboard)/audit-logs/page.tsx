@@ -109,7 +109,7 @@ export default function AuditLogsPage() {
   const statusIcon = (status: AuditLog["status"]) => {
     switch (status) {
       case "success":
-        return <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />;
+        return <CheckCircle className="h-4 w-4 text-orange-600 dark:text-orange-400" />;
       case "failed":
         return <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />;
       case "warning":
@@ -166,11 +166,11 @@ export default function AuditLogsPage() {
         </Card>
         <Card>
           <CardContent className="flex items-center gap-4 p-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30">
-              <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/30">
+              <CheckCircle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+              <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                 {successCount}
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -223,7 +223,7 @@ export default function AuditLogsPage() {
                   onChange={(e) =>
                     setFilters((f) => ({ ...f, search: e.target.value }))
                   }
-                  className="flex h-10 w-full rounded-lg border border-gray-300 bg-white pl-10 pr-3 py-2 text-sm transition-colors placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#168B61] focus-visible:ring-offset-1 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-400"
+                  className="flex h-10 w-full rounded-lg border border-gray-300 bg-white pl-10 pr-3 py-2 text-sm transition-colors placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00] focus-visible:ring-offset-1 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-400"
                 />
               </div>
             </div>
@@ -359,7 +359,7 @@ export default function AuditLogsPage() {
                       </td>
                       <td className="whitespace-nowrap px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#EAF7F1] text-xs font-medium text-[#168B61] dark:bg-[#0F684A]/20 dark:text-[#4ADE80]">
+                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#FFF3EB] text-xs font-medium text-[#FF6B00] dark:bg-[#E55A00]/20 dark:text-[#FF9A5C]">
                             {log.userName
                               .split(" ")
                               .map((n) => n[0])
