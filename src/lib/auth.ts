@@ -124,22 +124,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   fetchUser: async () => {
     try {
-      let response = await authService.me();
-
-      if (response.status === 401) {
-        try {
-          const refreshRes = await authService.refresh();
-          if (refreshRes.data.status === "success") {
-            setAccessToken(refreshRes.data.data.access_token);
-            response = await authService.me();
-          }
-        } catch {
-          setAccessToken(null);
-          set({ user: null, role: null, permissions: [], isAuthenticated: false });
-          return;
-        }
-      }
-
+      const response = await authService.me();
       const result = response.data;
 
       if (result.status === "success" && result.data) {
@@ -158,13 +143,26 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         });
       }
     } catch {
-      setAccessToken(null);
-      set({
-        user: null,
-        role: null,
-        permissions: [],
-        isAuthenticated: false,
-      });
+      try {
+        const refreshRes = await authService.refresh();
+        if (refreshRes.data.status === "success") {
+          setAccessToken(refreshRes.data.data.access_token);
+          const response = await authService.me();
+          const result = response.data;
+          if (result.status === "success" && result.data) {
+            const apiUser = result.data;
+            const user = mapApiUserToUser(apiUser);
+            const role = buildRole(apiUser);
+            const permissions = (apiUser.role?.permissions || []).map(
+              (p) => p.display_name || p.permission_name
+            );
+            set({ user, role, permissions, isAuthenticated: true });
+          }
+        }
+      } catch {
+        setAccessToken(null);
+        set({ user: null, role: null, permissions: [], isAuthenticated: false });
+      }
     }
   },
 
