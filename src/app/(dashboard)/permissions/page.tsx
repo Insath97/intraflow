@@ -6,6 +6,10 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
+import { useToast } from "@/components/ui/toast";
 import {
   ChevronDown,
   ChevronRight,
@@ -21,12 +25,15 @@ import {
   ArrowUp,
   ArrowDown,
   Loader2,
+  Plus,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   permissionService,
   type PermissionItem,
-  type PermissionStats,
+  type PermissionCreatePayload,
 } from "@/services/permission.service";
 
 interface GroupedPermissions {
@@ -48,32 +55,46 @@ const defaultFilters: Filters = {
   sort_order: "desc",
 };
 
+const emptyForm: PermissionCreatePayload = {
+  group_name: "",
+  permission_name: "",
+  display_name: "",
+  description: "",
+};
+
 export default function PermissionsPage() {
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const [permissions, setPermissions] = useState<PermissionItem[]>([]);
-  const [stats, setStats] = useState<PermissionStats | null>(null);
   const [groupNames, setGroupNames] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<Filters>(defaultFilters);
 
+  // Form modal
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState<PermissionCreatePayload>(emptyForm);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Delete
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const fetchPermissions = useCallback(async () => {
     setIsLoading(true);
     setError("");
     try {
-      const [permRes, statsRes, groupsRes] = await Promise.allSettled([
-        permissionService.getAll({ page: 1, size: 100 }),
-        permissionService.stats(),
+      const [permRes, groupsRes] = await Promise.allSettled([
+        permissionService.getAll({ page: 1, size: 500 }),
         permissionService.groups(),
       ]);
 
       if (permRes.status === "fulfilled" && permRes.value.data.status === "success") {
         setPermissions(permRes.value.data.data.items);
-      }
-      if (statsRes.status === "fulfilled" && statsRes.value.data.status === "success") {
-        setStats(statsRes.value.data.data);
       }
       if (groupsRes.status === "fulfilled" && groupsRes.value.data.status === "success") {
         setGroupNames(groupsRes.value.data.data.map((g) => g.group_name));
@@ -95,7 +116,6 @@ export default function PermissionsPage() {
     if (filters.group_name) {
       filtered = filtered.filter((p) => p.group_name === filters.group_name);
     }
-
     if (filters.is_active === "active") {
       filtered = filtered.filter((p) => p.is_active);
     } else if (filters.is_active === "inactive") {
@@ -131,8 +151,6 @@ export default function PermissionsPage() {
     }));
   }, [permissions, filters, searchQuery]);
 
-  const filteredGroups = groupedPermissions;
-
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (filters.group_name) count++;
@@ -141,9 +159,6 @@ export default function PermissionsPage() {
     if (filters.sort_order !== "desc") count++;
     return count;
   }, [filters]);
-
-  const totalPermissions = stats?.total_permissions ?? permissions.length;
-  const totalGroups = stats?.total_groups ?? groupedPermissions.length;
 
   function toggleGroupExpand(name: string) {
     setExpandedGroups((prev) => ({ ...prev, [name]: !prev[name] }));
@@ -168,6 +183,89 @@ export default function PermissionsPage() {
     setFilters((prev) => ({ ...prev, [key]: value }));
   }
 
+  // ---- Form ----
+  function openCreate() {
+    setEditingId(null);
+    setForm(emptyForm);
+    setFormErrors({});
+    setShowForm(true);
+  }
+
+  function openEdit(perm: PermissionItem) {
+    setEditingId(perm.id);
+    setForm({
+      group_name: perm.group_name,
+      permission_name: perm.permission_name,
+      display_name: perm.display_name,
+      description: perm.description || "",
+    });
+    setFormErrors({});
+    setShowForm(true);
+  }
+
+  function validateForm(): boolean {
+    const errors: Record<string, string> = {};
+    if (!form.group_name.trim()) errors.group_name = "Group name is required";
+    if (!form.permission_name.trim()) errors.permission_name = "Permission name is required";
+    if (form.permission_name && !/^[a-z_]+$/.test(form.permission_name)) {
+      errors.permission_name = "Lowercase letters and underscores only";
+    }
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  }
+
+  async function handleSave() {
+    if (!validateForm()) return;
+    setIsSaving(true);
+    try {
+      if (editingId) {
+        const res = await permissionService.update(editingId, form);
+        if (res.data.status === "success") {
+          toast("Permission updated successfully", "success");
+          setShowForm(false);
+          fetchPermissions();
+        } else {
+          toast(res.data.message || "Update failed", "error");
+        }
+      } else {
+        const res = await permissionService.create(form);
+        if (res.data.status === "success") {
+          toast("Permission created successfully", "success");
+          setShowForm(false);
+          fetchPermissions();
+        } else {
+          toast(res.data.message || "Create failed", "error");
+        }
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Something went wrong";
+      toast(msg, "error");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  // ---- Delete ----
+  async function handleDelete() {
+    if (!deletingId) return;
+    setIsDeleting(true);
+    try {
+      const res = await permissionService.delete(deletingId);
+      if (res.data.status === "success") {
+        toast("Permission deleted successfully", "success");
+        setDeletingId(null);
+        fetchPermissions();
+      } else {
+        toast(res.data.message || "Delete failed", "error");
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Something went wrong";
+      toast(msg, "error");
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
   const groupIcons: Record<string, typeof Shield> = {
     "PERSON MANAGEMENT": Shield,
     "USER MANAGEMENT": Key,
@@ -185,22 +283,6 @@ export default function PermissionsPage() {
           description="View all system permissions organized by module"
           breadcrumbs={[{ label: "Dashboard" }, { label: "Permissions" }]}
         />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="p-5">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 animate-pulse rounded-lg bg-gray-200 dark:bg-gray-700" />
-                <div className="flex-1">
-                  <div className="h-7 w-16 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
-                  <div className="mt-1 h-4 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-        <Card className="p-4">
-          <div className="h-10 animate-pulse rounded-lg bg-gray-200 dark:bg-gray-700" />
-        </Card>
         <Card className="p-6 text-center">
           <Loader2 className="mx-auto h-6 w-6 animate-spin text-[#FF6B00]" />
           <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">Loading permissions...</p>
@@ -220,12 +302,7 @@ export default function PermissionsPage() {
         <Card className="p-12 text-center">
           <AlertCircle className="mx-auto h-8 w-8 text-red-500" />
           <p className="mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={fetchPermissions}
-            className="mt-4"
-          >
+          <Button variant="outline" size="sm" onClick={fetchPermissions} className="mt-4">
             <RefreshCw className="mr-2 h-4 w-4" />
             Retry
           </Button>
@@ -248,65 +325,13 @@ export default function PermissionsPage() {
             <Button variant="outline" size="sm" onClick={collapseAll}>
               Collapse All
             </Button>
+            <Button size="sm" onClick={openCreate}>
+              <Plus className="mr-1.5 h-4 w-4" />
+              Add Permission
+            </Button>
           </div>
         }
       />
-
-      {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="p-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FFF3EB] text-[#FF6B00] dark:bg-[#E55A00]/20 dark:text-[#FF9A5C]">
-              <Key className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {totalPermissions}
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Total Permissions</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FFF3EB] text-[#FF6B00] dark:bg-[#E55A00]/20 dark:text-[#FF9A5C]">
-              <Shield className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {totalGroups}
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Permission Groups</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50 text-green-600 dark:bg-green-500/20 dark:text-green-400">
-              <ShieldCheck className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {stats?.active_permissions ?? totalPermissions}
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Active</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50 text-red-600 dark:bg-red-500/20 dark:text-red-400">
-              <Lock className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {stats?.inactive_permissions ?? 0}
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Inactive</p>
-            </div>
-          </div>
-        </Card>
-      </div>
 
       {/* Search + Filters */}
       <Card className="p-4">
@@ -348,8 +373,7 @@ export default function PermissionsPage() {
         </div>
 
         {showFilters && (
-          <div className="mt-4 grid grid-cols-1 gap-4 border-t border-gray-100 pt-4 sm:grid-cols-2 lg:grid-cols-4 dark:border-gray-800">
-            {/* Group Filter */}
+          <div className="mt-4 grid grid-cols-1 gap-4 border-t border-gray-100 pt-4 sm:grid-cols-2 lg:grid-cols-2 dark:border-gray-800">
             <div>
               <label className="mb-1.5 block text-xs font-medium text-gray-500 dark:text-gray-400">
                 Group
@@ -367,8 +391,6 @@ export default function PermissionsPage() {
                 ))}
               </select>
             </div>
-
-            {/* Status Filter */}
             <div>
               <label className="mb-1.5 block text-xs font-medium text-gray-500 dark:text-gray-400">
                 Status
@@ -383,8 +405,6 @@ export default function PermissionsPage() {
                 <option value="inactive">Inactive</option>
               </select>
             </div>
-
-            {/* Sort By */}
             <div>
               <label className="mb-1.5 block text-xs font-medium text-gray-500 dark:text-gray-400">
                 Sort By
@@ -400,8 +420,6 @@ export default function PermissionsPage() {
                 <option value="group_name">Group Name</option>
               </select>
             </div>
-
-            {/* Sort Order */}
             <div>
               <label className="mb-1.5 block text-xs font-medium text-gray-500 dark:text-gray-400">
                 Order
@@ -441,7 +459,7 @@ export default function PermissionsPage() {
 
       {/* Permission Groups */}
       <div className="space-y-4">
-        {filteredGroups.map((group) => {
+        {groupedPermissions.map((group) => {
           const expanded = expandedGroups[group.group_name] !== false;
           const Icon = groupIcons[group.group_name] || Shield;
           return (
@@ -488,6 +506,9 @@ export default function PermissionsPage() {
                         <th className="px-6 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                           Status
                         </th>
+                        <th className="px-6 py-2.5 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -521,6 +542,24 @@ export default function PermissionsPage() {
                               {perm.is_active ? "Active" : "Inactive"}
                             </Badge>
                           </td>
+                          <td className="px-6 py-3">
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                onClick={() => openEdit(perm)}
+                                className="rounded-lg p-1.5 text-gray-400 hover:bg-[#FFF3EB] hover:text-[#FF6B00] dark:hover:bg-[#E55A00]/20 dark:hover:text-[#FF9A5C] transition-colors"
+                                title="Edit"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => setDeletingId(perm.id)}
+                                className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/20 dark:hover:text-red-400 transition-colors"
+                                title="Delete"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -531,25 +570,115 @@ export default function PermissionsPage() {
           );
         })}
 
-        {filteredGroups.length === 0 && (
+        {groupedPermissions.length === 0 && (
           <Card className="p-12 text-center">
             <Lock className="mx-auto h-8 w-8 text-gray-400" />
             <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
               No permissions match your search or filters.
             </p>
             {activeFilterCount > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearFilters}
-                className="mt-3"
-              >
+              <Button variant="outline" size="sm" onClick={clearFilters} className="mt-3">
                 Clear Filters
               </Button>
             )}
           </Card>
         )}
       </div>
+
+      {/* Create / Edit Modal */}
+      <Dialog
+        open={showForm}
+        onClose={() => setShowForm(false)}
+        title={editingId ? "Edit Permission" : "Create Permission"}
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setShowForm(false)} disabled={isSaving}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : editingId ? (
+                "Update"
+              ) : (
+                "Create"
+              )}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="group_name" className="mb-1.5">
+              Group Name <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="group_name"
+              placeholder="e.g. User Management"
+              value={form.group_name}
+              onChange={(e) => setForm((p) => ({ ...p, group_name: e.target.value }))}
+              className={cn(formErrors.group_name && "border-red-500")}
+            />
+            {formErrors.group_name && (
+              <p className="mt-1 text-xs text-red-500">{formErrors.group_name}</p>
+            )}
+          </div>
+          <div>
+            <Label htmlFor="permission_name" className="mb-1.5">
+              Permission Name <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="permission_name"
+              placeholder="e.g. create_user (lowercase, underscores)"
+              value={form.permission_name}
+              onChange={(e) => setForm((p) => ({ ...p, permission_name: e.target.value }))}
+              className={cn(formErrors.permission_name && "border-red-500")}
+            />
+            {formErrors.permission_name && (
+              <p className="mt-1 text-xs text-red-500">{formErrors.permission_name}</p>
+            )}
+          </div>
+          <div>
+            <Label htmlFor="display_name" className="mb-1.5">
+              Display Name
+            </Label>
+            <Input
+              id="display_name"
+              placeholder="e.g. Create User (auto-generated if empty)"
+              value={form.display_name}
+              onChange={(e) => setForm((p) => ({ ...p, display_name: e.target.value }))}
+            />
+          </div>
+          <div>
+            <Label htmlFor="description" className="mb-1.5">
+              Description
+            </Label>
+            <textarea
+              id="description"
+              placeholder="Optional description"
+              value={form.description}
+              onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+              rows={3}
+              className="block w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 transition-colors placeholder:text-gray-400 focus:border-[#FF6B00] focus:outline-none focus:ring-1 focus:ring-[#FF6B00]/30 dark:border-white/10 dark:bg-[#1A1D2E] dark:text-white dark:placeholder:text-gray-500"
+            />
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={!!deletingId}
+        onClose={() => setDeletingId(null)}
+        onConfirm={handleDelete}
+        title="Delete Permission"
+        description="Are you sure you want to delete this permission? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+        loading={isDeleting}
+      />
     </div>
   );
 }

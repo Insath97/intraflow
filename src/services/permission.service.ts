@@ -5,6 +5,7 @@ export interface PermissionItem {
   group_name: string;
   permission_name: string;
   display_name: string;
+  description?: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -37,6 +38,21 @@ export interface ApiResponse<T = unknown> {
   data: T;
 }
 
+export interface PermissionCreatePayload {
+  group_name: string;
+  permission_name: string;
+  display_name?: string;
+  description?: string;
+}
+
+export interface PermissionUpdatePayload {
+  group_name?: string;
+  permission_name?: string;
+  display_name?: string;
+  description?: string;
+  is_active?: boolean;
+}
+
 export const permissionService = {
   getAll: (params?: {
     search?: string;
@@ -59,6 +75,18 @@ export const permissionService = {
       `/permissions?${q.toString()}`
     );
   },
+
+  getById: (id: string) =>
+    api.get<ApiResponse<PermissionItem>>(`/permissions/${id}`),
+
+  create: (data: PermissionCreatePayload) =>
+    api.post<ApiResponse<PermissionItem>>("/permissions", data),
+
+  update: (id: string, data: PermissionUpdatePayload) =>
+    api.put<ApiResponse<PermissionItem>>(`/permissions/${id}`, data),
+
+  delete: (id: string) =>
+    api.delete<ApiResponse<null>>(`/permissions/${id}`),
 
   list: () =>
     api.get<ApiResponse<PermissionItem[]>>("/permissions/list"),
