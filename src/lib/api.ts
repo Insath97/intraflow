@@ -11,8 +11,19 @@ const api = axios.create({
 
 let accessToken: string | null = null;
 
+if (typeof window !== "undefined") {
+  accessToken = localStorage.getItem("access_token");
+}
+
 export const setAccessToken = (token: string | null) => {
   accessToken = token;
+  if (typeof window !== "undefined") {
+    if (token) {
+      localStorage.setItem("access_token", token);
+    } else {
+      localStorage.removeItem("access_token");
+    }
+  }
 };
 
 export const getAccessToken = () => accessToken;
@@ -38,7 +49,7 @@ api.interceptors.response.use(
       !error.config?.url?.includes("/auth/me") &&
       !error.config?.url?.includes("/auth/refresh")
     ) {
-      accessToken = null;
+      setAccessToken(null);
       window.location.href = "/login";
     }
     return Promise.reject(error);
