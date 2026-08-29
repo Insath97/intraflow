@@ -14,9 +14,15 @@ import {
   Heart,
   AlertCircle,
   Loader2,
+  Shield,
+  BarChart3,
+  Users,
+  MapPin,
+  CheckCircle2,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 
 const loginSchema = z.object({
   login: z
@@ -30,6 +36,13 @@ const loginSchema = z.object({
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
+
+const features = [
+  { icon: Shield, label: "Secure Data Protection" },
+  { icon: Users, label: "Centralized User Management" },
+  { icon: BarChart3, label: "Real-time Analytics & Reports" },
+  { icon: MapPin, label: "Island-wide Coverage" },
+];
 
 export default function LoginPage() {
   const router = useRouter();
@@ -64,7 +77,7 @@ export default function LoginPage() {
       router.push("/dashboard");
     } else {
       setError(
-        "Invalid email or password. Please check your credentials and try again."
+        "Invalid credentials. Please check and try again."
       );
     }
 
@@ -74,49 +87,70 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen">
       {/* Left Panel - Branding */}
-      <div className="hidden w-1/2 bg-gradient-to-br from-[#1A1D2E] via-[#252836] to-[#0F1117] lg:flex lg:flex-col lg:items-center lg:justify-center">
+      <div className="hidden w-1/2 bg-gradient-to-br from-[#1A1D2E] via-[#252836] to-[#0F1117] lg:flex lg:flex-col lg:items-center lg:justify-center dark:from-[#1A1D2E] dark:via-[#252836] dark:to-[#0F1117]">
         <div className="mx-auto max-w-md px-8 text-center">
-          <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-2xl bg-[#FF6B00]">
-            <Heart className="h-10 w-10 text-white" />
+          {/* Logo */}
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#FF6B00] shadow-lg shadow-[#FF6B00]/20">
+            <Heart className="h-8 w-8 text-white" />
           </div>
-          <h1 className="mb-3 text-3xl font-bold text-white">
-            Persons with Disabilities
+
+          {/* Brand Name */}
+          <h1 className="mb-2 text-3xl font-bold text-white">
+            IntraFlow
           </h1>
-          <h2 className="mb-6 text-2xl font-semibold text-white/90">
-            Management Information System
-          </h2>
-          <p className="text-base leading-relaxed text-white/60">
-            A comprehensive platform for managing registration, services, and
-            support for persons with disabilities across the nation.
+          <p className="mb-8 text-sm font-medium tracking-wider text-[#FF6B00] uppercase">
+            Persons with Disabilities Management System
           </p>
-          <div className="mt-10 grid grid-cols-3 gap-6">
-            <div className="rounded-xl bg-white/5 p-4 backdrop-blur-sm">
-              <p className="text-2xl font-bold text-[#FF6B00]">10K+</p>
-              <p className="mt-1 text-xs text-white/50">Registered</p>
+
+          {/* Features */}
+          <div className="space-y-4 text-left">
+            {features.map((feature) => (
+              <div
+                key={feature.label}
+                className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 backdrop-blur-sm"
+              >
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#FF6B00]/10">
+                  <feature.icon className="h-4 w-4 text-[#FF6B00]" />
+                </div>
+                <span className="text-sm text-white/80">{feature.label}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Stats */}
+          <div className="mt-10 grid grid-cols-3 gap-4">
+            <div className="rounded-xl bg-white/5 p-3 backdrop-blur-sm">
+              <p className="text-xl font-bold text-[#FF6B00]">10K+</p>
+              <p className="mt-0.5 text-[10px] text-white/40">Registered Users</p>
             </div>
-            <div className="rounded-xl bg-white/5 p-4 backdrop-blur-sm">
-              <p className="text-2xl font-bold text-[#FF6B00]">25</p>
-              <p className="mt-1 text-xs text-white/50">Districts</p>
+            <div className="rounded-xl bg-white/5 p-3 backdrop-blur-sm">
+              <p className="text-xl font-bold text-[#FF6B00]">25</p>
+              <p className="mt-0.5 text-[10px] text-white/40">Districts</p>
             </div>
-            <div className="rounded-xl bg-white/5 p-4 backdrop-blur-sm">
-              <p className="text-2xl font-bold text-[#FF6B00]">340+</p>
-              <p className="mt-1 text-xs text-white/50">DS Divisions</p>
+            <div className="rounded-xl bg-white/5 p-3 backdrop-blur-sm">
+              <p className="text-xl font-bold text-[#FF6B00]">340+</p>
+              <p className="mt-0.5 text-[10px] text-white/40">DS Divisions</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Right Panel - Login Form */}
-      <div className="flex w-full flex-col items-center justify-center bg-[#F5F5F5] px-6 py-12 dark:bg-[#0F1117] lg:w-1/2">
+      <div className="relative flex w-full flex-col items-center justify-center bg-[#F5F5F5] px-6 py-12 dark:bg-[#0F1117] lg:w-1/2">
+        {/* Theme Toggle - Top Right */}
+        <div className="absolute right-4 top-4 sm:right-6 sm:top-6">
+          <ThemeToggle />
+        </div>
+
         {/* Mobile Header */}
         <div className="mb-8 text-center lg:hidden">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-[#FF6B00]">
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-[#FF6B00] shadow-lg shadow-[#FF6B00]/20">
             <Heart className="h-7 w-7 text-white" />
           </div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">
             IntraFlow
           </h1>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
             PWD Management System
           </p>
         </div>
@@ -254,6 +288,11 @@ export default function LoginPage() {
               {isLoading ? "Signing in..." : "Sign in"}
             </button>
           </form>
+
+          {/* Footer */}
+          <p className="mt-8 text-center text-xs text-gray-400 dark:text-gray-500">
+            © 2026 IntraFlow. All rights reserved.
+          </p>
         </div>
       </div>
     </div>
