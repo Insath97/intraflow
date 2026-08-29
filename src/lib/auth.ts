@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import type { User, Role, Permission } from "@/types";
-import { authApi, type LoginResponse } from "./api";
+import { authApi, setAccessToken, getAccessToken, type LoginResponse } from "./api";
 
 interface AuthState {
   user: User | null;
@@ -34,6 +34,28 @@ function mapApiUserToUser(apiUser: LoginResponse["user"]): User {
   };
 }
 
+function buildRole(apiUser: LoginResponse["user"]): Role {
+  return apiUser.role
+    ? {
+        id: apiUser.role.id,
+        name: apiUser.role.name,
+        permissionIds: apiUser.role.permissions || [],
+        description: "",
+        status: "active",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+    : {
+        id: "",
+        name: "",
+        permissionIds: [],
+        description: "",
+        status: "active",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+}
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   role: null,
@@ -54,27 +76,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return false;
       }
 
-      const { user: apiUser } = result.data;
+      const { user: apiUser, access_token } = result.data;
+
+      setAccessToken(access_token);
+
       const user = mapApiUserToUser(apiUser);
-      const role: Role = apiUser.role
-        ? {
-            id: apiUser.role.id,
-            name: apiUser.role.name,
-            permissionIds: apiUser.role.permissions || [],
-            description: "",
-            status: "active",
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          }
-        : {
-            id: "",
-            name: "",
-            permissionIds: [],
-            description: "",
-            status: "active",
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          };
+      const role = buildRole(apiUser);
 
       set({
         user,
@@ -99,6 +106,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch {
       // Continue with local logout even if API fails
     } finally {
+      setAccessToken(null);
       set({
         user: null,
         role: null,
@@ -110,40 +118,43 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   fetchUser: async () => {
     try {
-      const response = await authApi.me();
-      const result = response.data;
+      const token = getAccessToken();
 
-      if (result.success && result.data) {
-        const apiUser = result.data;
-        const user = mapApiUserToUser(apiUser);
-        const role: Role = apiUser.role
-          ? {
-              id: apiUser.role.id,
-              name: apiUser.role.name,
-              permissionIds: apiUser.role.permissions || [],
-              description: "",
-              status: "active",
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            }
-          : {
-              id: "",
-              name: "",
-              permissionIds: [],
-              description: "",
-              status: "active",
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            };
+      if (!token) {
+        const response = await authApi.me();
+        const result = response.data;
 
-        set({
-          user,
-          role,
-          permissions: apiUser.role?.permissions || [],
-          isAuthenticated: true,
-        });
+        if (result.success && result.data) {
+          const apiUser = result.data;
+          const user = mapApiUserToUser(apiUser);
+          const role = buildRole(apiUser);
+
+          set({
+            user,
+            role,
+            permissions: apiUser.role?.permissions || [],
+            isAuthenticated: true,
+          });
+        }
+      } else {
+        const response = await authApi.me();
+        const result = response.data;
+
+        if (result.success && result.data) {
+          const apiUser = result.data;
+          const user = mapApiUserToUser(apiUser);
+          const role = buildRole(apiUser);
+
+          set({
+            user,
+            role,
+            permissions: apiUser.role?.permissions || [],
+            isAuthenticated: true,
+          });
+        }
       }
     } catch {
+      setAccessToken(null);
       set({
         user: null,
         role: null,
