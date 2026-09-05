@@ -1,8 +1,11 @@
 export { authService } from "./auth.service";
 export { permissionService } from "./permission.service";
-export { UserService } from "./user.service";
+export type { PermissionItem } from "./permission.service";
+export { UserService, userService } from "./user.service";
+export type { UserItem, UserSimple, UserStats, UserPagination, UserListParams } from "./user.service";
 export { PersonService } from "./person.service";
-export { RoleService } from "./role.service";
+export { roleService, RoleService } from "./role.service";
+export type { RoleItem as RoleServiceItem, RoleSimple, RoleStats } from "./role.service";
 export { TerritoryService } from "./territory.service";
 export { AuditLogService } from "./audit-log.service";
 export { ReportService } from "./report.service";

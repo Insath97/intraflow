@@ -1,239 +1,148 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import type { User, Role } from "@/types";
-import { UserService, RoleService, TerritoryService } from "@/services";
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { userService } from "@/services";
+import type { UserItem } from "@/services/user.service";
 import { useToast } from "@/components/ui/toast";
 import { PageHeader } from "@/components/common/page-header";
 import { StatusBadge } from "@/components/common/status-badge";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { EmptyState } from "@/components/common/empty-state";
-import { DataTable } from "@/components/tables/data-table";
+import { LoadingState } from "@/components/common/loading-state";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
-import { Dialog } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { FormField } from "@/components/forms/form-field";
-import type { ColumnDef } from "@tanstack/react-table";
 import {
   Plus,
-  Eye,
   Pencil,
   Trash2,
-  UserPlus,
-  Search,
-  Power,
   Users,
+  Search,
+  UserPlus,
+  SlidersHorizontal,
+  X,
+  ChevronsLeft,
+  ChevronsRight,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Power,
+  LogIn,
+  Shield,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-interface UserFormData {
-  name: string;
-  email: string;
-  employeeId: string;
-  phone: string;
-  roleId: string;
-  provinceId: string;
-  districtId: string;
-  dsDivisionId: string;
-  status: "active" | "inactive";
-}
-
-const emptyForm: UserFormData = {
-  name: "",
-  email: "",
-  employeeId: "",
-  phone: "",
-  roleId: "",
-  provinceId: "",
-  districtId: "",
-  dsDivisionId: "",
-  status: "active",
-};
+const PAGE_SIZE_OPTIONS = [5, 10, 25, 50, 100];
 
 export default function UsersPage() {
+  const router = useRouter();
   const { toast } = useToast();
-  const [users, setUsers] = useState<User[]>([]);
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(true);
 
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [viewingUser, setViewingUser] = useState<User | null>(null);
-  const [form, setForm] = useState<UserFormData>(emptyForm);
-  const [errors, setErrors] = useState<Partial<Record<keyof UserFormData, string>>>({});
-  const [saving, setSaving] = useState(false);
+  const [users, setUsers] = useState<UserItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+
+  const [stats, setStats] = useState<{ total: number; active: number; inactive: number; can_login: number; cannot_login: number } | null>(null);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  const [deletingUser, setDeletingUser] = useState<UserItem | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
-  const [statusUser, setStatusUser] = useState<User | null>(null);
+  const [statusUser, setStatusUser] = useState<UserItem | null>(null);
   const [togglingStatus, setTogglingStatus] = useState(false);
 
-  const provinces = useMemo(() => TerritoryService.getProvinces(), []);
-  const [districts, setDistricts] = useState(TerritoryService.getDistricts());
-  const [dsDivisions, setDsDivisions] = useState(TerritoryService.getDSDivisions());
+  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+  const [loginUser, setLoginUser] = useState<UserItem | null>(null);
+  const [togglingLogin, setTogglingLogin] = useState(false);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
-    if (form.provinceId) {
-      setDistricts(TerritoryService.getDistrictsByProvince(form.provinceId));
-      setForm((prev) => ({ ...prev, districtId: "", dsDivisionId: "" }));
-    }
-  }, [form.provinceId]);
+    setCurrentPage(1);
+  }, [debouncedSearch, statusFilter, roleFilter, pageSize]);
 
-  useEffect(() => {
-    if (form.districtId) {
-      setDsDivisions(TerritoryService.getDSDivisionsByDistrict(form.districtId));
-      setForm((prev) => ({ ...prev, dsDivisionId: "" }));
-    }
-  }, [form.districtId]);
-
-  function loadData() {
+  const fetchUsers = useCallback(async () => {
     try {
-      setUsers(UserService.getAll());
-      setRoles(RoleService.getAll());
+      setLoading(true);
+      const params: Record<string, unknown> = {
+        page: currentPage,
+        size: pageSize,
+      };
+      if (debouncedSearch) params.search = debouncedSearch;
+      if (statusFilter === "active") params.is_active = true;
+      if (statusFilter === "inactive") params.is_active = false;
+      if (roleFilter) params.role_id = roleFilter;
+
+      const res = await userService.getAll(params as { search?: string; role_id?: string; is_active?: boolean; page?: number; size?: number });
+      if (res.data.status === "success" && res.data.data) {
+        setUsers(res.data.data.items);
+        setTotalCount(res.data.data.pagination.total_count);
+        setTotalPages(res.data.data.pagination.total_pages);
+      }
+    } catch {
+      toast("Failed to load users", "error");
     } finally {
       setLoading(false);
     }
-  }
+  }, [currentPage, pageSize, debouncedSearch, statusFilter, roleFilter, toast]);
 
-  const roleMap = useMemo(() => {
-    const map: Record<string, Role> = {};
-    roles.forEach((r) => (map[r.id] = r));
-    return map;
-  }, [roles]);
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
-  const filteredUsers = useMemo(() => {
-    if (!searchQuery.trim()) return users;
-    return UserService.search(searchQuery);
-  }, [users, searchQuery]);
-
-  function getRoleName(roleId: string): string {
-    return roleMap[roleId]?.name ?? "Unknown";
-  }
-
-  function getTerritoryLabel(user: User): string {
-    if (user.dsDivisionId) {
-      const ds = dsDivisions.find((d) => d.id === user.dsDivisionId);
-      return ds?.name ?? "";
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const res = await userService.stats();
+        if (res.data.status === "success") setStats(res.data.data);
+      } catch { /* non-critical */ }
     }
-    if (user.districtId) {
-      const dist = districts.find((d) => d.id === user.districtId);
-      return dist?.name ?? "";
-    }
-    if (user.provinceId) {
-      const prov = provinces.find((p) => p.id === user.provinceId);
-      return prov?.name ?? "";
-    }
-    return "-";
+    loadStats();
+  }, []);
+
+  const activeFilters = [statusFilter, roleFilter].filter(Boolean).length;
+
+  function clearFilters() {
+    setStatusFilter("");
+    setRoleFilter("");
+    setSearchQuery("");
   }
 
-  function openCreate() {
-    setEditingUser(null);
-    setForm(emptyForm);
-    setErrors({});
-    setDialogOpen(true);
-  }
-
-  function openEdit(user: User) {
-    setEditingUser(user);
-    setForm({
-      name: user.name,
-      email: user.email,
-      employeeId: user.employeeId,
-      phone: user.phone,
-      roleId: user.roleId,
-      provinceId: user.provinceId || "",
-      districtId: user.districtId || "",
-      dsDivisionId: user.dsDivisionId || "",
-      status: user.status,
-    });
-    setErrors({});
-    setDialogOpen(true);
-  }
-
-  function validate(): boolean {
-    const errs: Partial<Record<keyof UserFormData, string>> = {};
-    if (!form.name.trim()) errs.name = "Name is required";
-    if (!form.email.trim()) errs.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(form.email)) errs.email = "Invalid email";
-    if (!form.employeeId.trim()) errs.employeeId = "Employee ID is required";
-    if (!form.phone.trim()) errs.phone = "Phone is required";
-    if (!form.roleId) errs.roleId = "Role is required";
-    if (!form.provinceId) errs.provinceId = "Province is required";
-
-    if (form.email.trim()) {
-      const existing = UserService.getByEmail(form.email.trim());
-      if (existing && (!editingUser || existing.id !== editingUser.id)) {
-        errs.email = "Email already in use";
-      }
-    }
-
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
-  }
-
-  function handleSave() {
-    if (!validate()) return;
-    setSaving(true);
-    try {
-      if (editingUser) {
-        UserService.update(editingUser.id, {
-          name: form.name.trim(),
-          email: form.email.trim(),
-          employeeId: form.employeeId.trim(),
-          phone: form.phone.trim(),
-          roleId: form.roleId,
-          provinceId: form.provinceId || undefined,
-          districtId: form.districtId || undefined,
-          dsDivisionId: form.dsDivisionId || undefined,
-          status: form.status,
-        });
-        toast("User updated successfully", "success");
-      } else {
-        UserService.create({
-          name: form.name.trim(),
-          email: form.email.trim(),
-          employeeId: form.employeeId.trim(),
-          phone: form.phone.trim(),
-          roleId: form.roleId,
-          provinceId: form.provinceId || undefined,
-          districtId: form.districtId || undefined,
-          dsDivisionId: form.dsDivisionId || undefined,
-          status: form.status,
-        });
-        toast("User created successfully", "success");
-      }
-      loadData();
-      setDialogOpen(false);
-    } catch {
-      toast("An error occurred", "error");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  function confirmDelete(user: User) {
+  function confirmDelete(user: UserItem) {
     setDeletingUser(user);
     setDeleteDialogOpen(true);
   }
 
-  function handleDelete() {
+  async function handleDelete() {
     if (!deletingUser) return;
     setDeleting(true);
     try {
-      UserService.remove(deletingUser.id);
-      toast("User deleted successfully", "success");
-      loadData();
-    } catch {
-      toast("An error occurred", "error");
+      const res = await userService.delete(deletingUser.id);
+      if (res.data.status === "success") {
+        toast(res.data.message || "User deleted successfully", "success");
+        fetchUsers();
+      } else {
+        toast(res.data.message || "Failed to delete user", "error");
+      }
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string } }; message?: string };
+      const message = axiosErr.response?.data?.message || axiosErr.message || "An error occurred";
+      toast(message, "error");
     } finally {
       setDeleting(false);
       setDeleteDialogOpen(false);
@@ -241,24 +150,29 @@ export default function UsersPage() {
     }
   }
 
-  function confirmStatusToggle(user: User) {
+  function confirmStatusToggle(user: UserItem) {
     setStatusUser(user);
     setStatusDialogOpen(true);
   }
 
-  function handleStatusToggle() {
+  async function handleStatusToggle() {
     if (!statusUser) return;
     setTogglingStatus(true);
     try {
-      const newStatus = statusUser.status === "active" ? "inactive" : "active";
-      UserService.update(statusUser.id, { status: newStatus });
-      toast(
-        `User ${newStatus === "active" ? "activated" : "deactivated"} successfully`,
-        "success"
-      );
-      loadData();
-    } catch {
-      toast("An error occurred", "error");
+      const res = await userService.toggleStatus(statusUser.id);
+      if (res.data.status === "success") {
+        toast(
+          `User ${statusUser.is_active ? "deactivated" : "activated"} successfully`,
+          "success"
+        );
+        fetchUsers();
+      } else {
+        toast(res.data.message || "Failed to toggle status", "error");
+      }
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string } }; message?: string };
+      const message = axiosErr.response?.data?.message || axiosErr.message || "An error occurred";
+      toast(message, "error");
     } finally {
       setTogglingStatus(false);
       setStatusDialogOpen(false);
@@ -266,320 +180,387 @@ export default function UsersPage() {
     }
   }
 
-  const columns: ColumnDef<User, unknown>[] = [
-    {
-      accessorKey: "name",
-      header: "Name",
-      cell: ({ row }) => (
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FFF3EB] text-xs font-medium text-[#FF6B00] dark:bg-[#E55A00]/20 dark:text-[#FF9A5C]">
-            {row.original.name.charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <p className="font-medium text-gray-900 dark:text-gray-100">
-              {row.original.name}
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              {row.original.phone}
-            </p>
-          </div>
-        </div>
-      ),
-    },
-    {
-      accessorKey: "email",
-      header: "Email",
-      cell: ({ row }) => (
-        <span className="text-gray-600 dark:text-gray-300">
-          {row.original.email}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "employeeId",
-      header: "Employee ID",
-      cell: ({ row }) => (
-        <Badge variant="secondary">{row.original.employeeId}</Badge>
-      ),
-    },
-    {
-      accessorKey: "roleId",
-      header: "Role",
-      cell: ({ row }) => (
-        <Badge variant="outline">{getRoleName(row.original.roleId)}</Badge>
-      ),
-    },
-    {
-      id: "territory",
-      header: "Territory",
-      cell: ({ row }) => (
-        <span className="text-gray-600 dark:text-gray-300">
-          {getTerritoryLabel(row.original)}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "status",
-      header: "Status",
-      cell: ({ row }) => <StatusBadge status={row.original.status} />,
-    },
-    {
-      accessorKey: "lastLogin",
-      header: "Last Login",
-      cell: ({ row }) => {
-        const login = row.original.lastLogin;
-        return login ? (
-          <span className="text-xs text-gray-500 dark:text-gray-400">
-            {new Date(login).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </span>
-        ) : (
-          <span className="text-xs text-gray-400 dark:text-gray-500">Never</span>
-        );
-      },
-    },
-  ];
+  function confirmLoginToggle(user: UserItem) {
+    setLoginUser(user);
+    setLoginDialogOpen(true);
+  }
 
-  const userActions = (user: User) => [
-    { label: "View Details", onClick: () => setViewingUser(user) },
-    { label: "Edit", onClick: () => openEdit(user) },
-    {
-      label: user.status === "active" ? "Deactivate" : "Activate",
-      onClick: () => confirmStatusToggle(user),
-    },
-    { label: "Delete", onClick: () => confirmDelete(user), destructive: true },
-  ];
+  async function handleLoginToggle() {
+    if (!loginUser) return;
+    setTogglingLogin(true);
+    try {
+      const res = await userService.toggleLogin(loginUser.id);
+      if (res.data.status === "success") {
+        toast(
+          `Login ${loginUser.can_login ? "disabled" : "enabled"} for ${loginUser.full_name}`,
+          "success"
+        );
+        fetchUsers();
+      } else {
+        toast(res.data.message || "Failed to toggle login", "error");
+      }
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string } }; message?: string };
+      const message = axiosErr.response?.data?.message || axiosErr.message || "An error occurred";
+      toast(message, "error");
+    } finally {
+      setTogglingLogin(false);
+      setLoginDialogOpen(false);
+      setLoginUser(null);
+    }
+  }
+
+  const startItem = (currentPage - 1) * pageSize + 1;
+  const endItem = Math.min(currentPage * pageSize, totalCount);
+
+  function getPageNumbers(): (number | "...")[] {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    const pages: (number | "...")[] = [1];
+    if (currentPage > 3) pages.push("...");
+    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+      pages.push(i);
+    }
+    if (currentPage < totalPages - 2) pages.push("...");
+    pages.push(totalPages);
+    return pages;
+  }
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="User Management"
-        description="Manage system users, roles, and access control"
-        breadcrumbs={[
-          { label: "Dashboard" },
-          { label: "Users" },
-        ]}
+        title="Users"
+        description="Manage system users, their roles, and access permissions"
+        breadcrumbs={[{ label: "Dashboard", onClick: () => router.push("/dashboard") }, { label: "Users" }]}
         actions={
-          <Button onClick={openCreate}>
+          <Button onClick={() => router.push("/users/create")}>
             <UserPlus className="mr-2 h-4 w-4" />
             Create User
           </Button>
         }
       />
 
-      <div className="flex items-center gap-3">
-        <div className="relative max-w-sm flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <Input
-            placeholder="Search users by name, email, or employee ID..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
+      {/* Stats Cards */}
+      {stats && (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+          <Card>
+            <CardContent className="flex items-center gap-3 p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
+                <Users className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.total}</p>
+                <p className="text-xs text-gray-500">Total Users</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="flex items-center gap-3 p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30">
+                <Users className="h-5 w-5 text-green-600 dark:text-green-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.active}</p>
+                <p className="text-xs text-gray-500">Active</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="flex items-center gap-3 p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900/30">
+                <Users className="h-5 w-5 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.inactive}</p>
+                <p className="text-xs text-gray-500">Inactive</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="flex items-center gap-3 p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                <LogIn className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.can_login}</p>
+                <p className="text-xs text-gray-500">Can Login</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="flex items-center gap-3 p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                <Shield className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.cannot_login}</p>
+                <p className="text-xs text-gray-500">No Login</p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-          <Users className="h-4 w-4" />
-          <span>{filteredUsers.length} user(s)</span>
-        </div>
-      </div>
+      )}
 
-      {filteredUsers.length === 0 && !loading ? (
+      {/* Search + Filters */}
+      <Card className="p-4">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Input
+                placeholder="Search users by name, email, username, or employee code..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9"
+              />
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowFilters(!showFilters)}
+                className={cn("relative min-w-[120px]", showFilters && "border-[#FF6B00] text-[#FF6B00]")}
+              >
+                <SlidersHorizontal className="mr-1.5 h-4 w-4" />
+                Filters
+                {activeFilters > 0 && (
+                  <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#FF6B00] text-[10px] text-white">
+                    {activeFilters}
+                  </span>
+                )}
+              </Button>
+              {activeFilters > 0 && (
+                <Button variant="ghost" size="sm" onClick={clearFilters}>
+                  <X className="mr-1 h-3 w-3" />
+                  Clear
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {showFilters && (
+            <div className="border-t border-gray-100 pt-4 dark:border-gray-800">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-gray-500 dark:text-gray-400">Status</label>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="flex h-9 w-full appearance-none rounded-lg border border-gray-300 bg-white px-3 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                  >
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-gray-500 dark:text-gray-400">Login Access</label>
+                  <select
+                    value={roleFilter}
+                    onChange={(e) => setRoleFilter(e.target.value)}
+                    className="flex h-9 w-full appearance-none rounded-lg border border-gray-300 bg-white px-3 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                  >
+                    <option value="">All</option>
+                    <option value="true">Can Login</option>
+                    <option value="false">Cannot Login</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeFilters > 0 && (
+            <div className="flex flex-wrap gap-2 border-t border-gray-100 pt-3 dark:border-gray-800">
+              {statusFilter && (
+                <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                  Status: {statusFilter}
+                  <button type="button" onClick={() => setStatusFilter("")} className="ml-0.5 rounded-full p-0.5 hover:bg-gray-200 dark:hover:bg-gray-700">
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              )}
+              {roleFilter && (
+                <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                  Login: {roleFilter === "true" ? "Can Login" : "Cannot Login"}
+                  <button type="button" onClick={() => setRoleFilter("")} className="ml-0.5 rounded-full p-0.5 hover:bg-gray-200 dark:hover:bg-gray-700">
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      </Card>
+
+      {/* Users Table */}
+      {loading ? (
+        <LoadingState message="Loading users..." />
+      ) : users.length === 0 ? (
         <EmptyState
           icon={<Users className="h-8 w-8" />}
           title="No users found"
-          description={searchQuery ? "Try a different search term." : "Create your first user to get started."}
-          action={!searchQuery ? { label: "Create User", onClick: openCreate } : undefined}
+          description="Create your first user to get started."
+          action={{ label: "Create User", onClick: () => router.push("/users/create") }}
         />
       ) : (
-        <DataTable
-          columns={columns}
-          data={filteredUsers}
-          searchColumn="name"
-          actions={userActions}
-          pageSize={10}
-        />
+        <Card>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Name</th>
+                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Email</th>
+                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Username</th>
+                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Employee Code</th>
+                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Role</th>
+                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Status</th>
+                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Login</th>
+                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50/50 dark:border-gray-800 dark:hover:bg-gray-800/50">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FFF3EB] text-xs font-medium text-[#FF6B00] dark:bg-[#E55A00]/20 dark:text-[#FF9A5C]">
+                          {user.profile_image_path ? (
+                            <img src={user.profile_image_path} alt="" className="h-8 w-8 rounded-full object-cover" />
+                          ) : (
+                            user.f_name.charAt(0).toUpperCase()
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900 dark:text-gray-100">{user.full_name}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{user.designation || "-"}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{user.email}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{user.username}</td>
+                    <td className="px-4 py-3">
+                      <Badge variant="secondary">{user.employee_code}</Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge variant="outline">{user.role?.name || "N/A"}</Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={user.is_active ? "active" : "inactive"} />
+                    </td>
+                    <td className="px-4 py-3">
+                      {user.can_login ? (
+                        <span className="text-xs font-medium text-green-600 dark:text-green-400">Yes</span>
+                      ) : (
+                        <span className="text-xs font-medium text-red-600 dark:text-red-400">No</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => router.push(`/users/${user.id}`)} title="View">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => router.push(`/users/${user.id}/edit`)} title="Edit">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => confirmStatusToggle(user)}
+                          title={user.is_active ? "Deactivate" : "Activate"}
+                        >
+                          <Power className={cn("h-4 w-4", user.is_active ? "text-green-600" : "text-gray-400")} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => confirmLoginToggle(user)}
+                          title={user.can_login ? "Disable Login" : "Enable Login"}
+                        >
+                          <LogIn className={cn("h-4 w-4", user.can_login ? "text-blue-600" : "text-gray-400")} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-red-600 hover:text-red-700 dark:text-red-400"
+                          onClick={() => confirmDelete(user)}
+                          title="Delete"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
       )}
 
-      {/* View User Dialog */}
-      {viewingUser && (
-        <Dialog
-          open={!!viewingUser}
-          onClose={() => setViewingUser(null)}
-          title="User Details"
-        >
-          <div className="space-y-4">
+      {/* Pagination */}
+      {totalCount > 0 && (
+        <Card className="px-4 py-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#FFF3EB] text-2xl font-bold text-[#FF6B00] dark:bg-[#E55A00]/20 dark:text-[#FF9A5C]">
-                {viewingUser.name.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                  {viewingUser.name}
-                </h3>
-                <StatusBadge status={viewingUser.status} />
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Showing <span className="font-medium text-gray-700 dark:text-gray-300">{startItem}</span> to{" "}
+                <span className="font-medium text-gray-700 dark:text-gray-300">{endItem}</span> of{" "}
+                <span className="font-medium text-gray-700 dark:text-gray-300">{totalCount}</span> users
+              </p>
+              <div className="flex items-center gap-1.5">
+                <label className="text-xs text-gray-500">Show</label>
+                <select
+                  value={pageSize}
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                  className="h-8 rounded-md border border-gray-300 bg-white px-2 text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                >
+                  {PAGE_SIZE_OPTIONS.map((size) => (
+                    <option key={size} value={size}>{size}</option>
+                  ))}
+                </select>
               </div>
             </div>
-            <div className="grid gap-3 text-sm">
-              {[
-                ["Email", viewingUser.email],
-                ["Employee ID", viewingUser.employeeId],
-                ["Phone", viewingUser.phone],
-                ["Role", getRoleName(viewingUser.roleId)],
-                ["Territory", getTerritoryLabel(viewingUser)],
-                [
-                  "Created",
-                  new Date(viewingUser.createdAt).toLocaleDateString(),
-                ],
-                [
-                  "Last Login",
-                  viewingUser.lastLogin
-                    ? new Date(viewingUser.lastLogin).toLocaleString()
-                    : "Never",
-                ],
-              ].map(([label, value]) => (
-                <div key={label} className="flex justify-between border-b border-gray-100 py-2 dark:border-gray-800">
-                  <span className="text-gray-500 dark:text-gray-400">{label}</span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">{value}</span>
-                </div>
-              ))}
+            <div className="flex items-center gap-1">
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>
+                <ChevronsLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              {getPageNumbers().map((page, i) =>
+                page === "..." ? (
+                  <span key={`ellipsis-${i}`} className="px-1 text-sm text-gray-400">...</span>
+                ) : (
+                  <Button
+                    key={page}
+                    variant={currentPage === page ? "default" : "outline"}
+                    size="icon"
+                    className={cn("h-8 w-8", currentPage === page && "bg-[#FF6B00] text-white hover:bg-[#E55A00]")}
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </Button>
+                )
+              )}
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages}>
+                <ChevronsRight className="h-4 w-4" />
+              </Button>
             </div>
           </div>
-        </Dialog>
+        </Card>
       )}
-
-      {/* Create / Edit Dialog */}
-      <Dialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        title={editingUser ? "Edit User" : "Create User"}
-        className="max-w-xl"
-        footer={
-          <>
-            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave} disabled={saving}>
-              {saving ? "Saving..." : editingUser ? "Update" : "Create"}
-            </Button>
-          </>
-        }
-      >
-        <div className="grid gap-4 sm:grid-cols-2">
-          <FormField label="Full Name" required error={errors.name} className="sm:col-span-2">
-            <Input
-              placeholder="Enter full name"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              error={!!errors.name}
-            />
-          </FormField>
-          <FormField label="Email" required error={errors.email} className="sm:col-span-2">
-            <Input
-              type="email"
-              placeholder="user@example.com"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              error={!!errors.email}
-            />
-          </FormField>
-          <FormField label="Employee ID" required error={errors.employeeId}>
-            <Input
-              placeholder="EMP-001"
-              value={form.employeeId}
-              onChange={(e) => setForm({ ...form, employeeId: e.target.value })}
-              error={!!errors.employeeId}
-            />
-          </FormField>
-          <FormField label="Phone" required error={errors.phone}>
-            <Input
-              placeholder="077 123 4567"
-              value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              error={!!errors.phone}
-            />
-          </FormField>
-          <FormField label="Role" required error={errors.roleId}>
-            <Select
-              value={form.roleId}
-              onChange={(e) => setForm({ ...form, roleId: e.target.value })}
-              error={!!errors.roleId}
-            >
-              <option value="">Select role</option>
-              {roles.map((role) => (
-                <option key={role.id} value={role.id}>
-                  {role.name}
-                </option>
-              ))}
-            </Select>
-          </FormField>
-          <FormField label="Status" required>
-            <Select
-              value={form.status}
-              onChange={(e) => setForm({ ...form, status: e.target.value as "active" | "inactive" })}
-            >
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </Select>
-          </FormField>
-          <FormField label="Province" required error={errors.provinceId}>
-            <Select
-              value={form.provinceId}
-              onChange={(e) => setForm({ ...form, provinceId: e.target.value })}
-              error={!!errors.provinceId}
-            >
-              <option value="">Select province</option>
-              {provinces.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </Select>
-          </FormField>
-          <FormField label="District">
-            <Select
-              value={form.districtId}
-              onChange={(e) => setForm({ ...form, districtId: e.target.value })}
-              disabled={!form.provinceId}
-            >
-              <option value="">Select district</option>
-              {districts.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-            </Select>
-          </FormField>
-          <FormField label="DS Division" className="sm:col-span-2">
-            <Select
-              value={form.dsDivisionId}
-              onChange={(e) => setForm({ ...form, dsDivisionId: e.target.value })}
-              disabled={!form.districtId}
-            >
-              <option value="">Select DS division</option>
-              {dsDivisions.map((ds) => (
-                <option key={ds.id} value={ds.id}>
-                  {ds.name}
-                </option>
-              ))}
-            </Select>
-          </FormField>
-        </div>
-      </Dialog>
 
       {/* Delete Confirmation */}
       <ConfirmDialog
         open={deleteDialogOpen}
-        onClose={() => {
-          setDeleteDialogOpen(false);
-          setDeletingUser(null);
-        }}
+        onClose={() => { setDeleteDialogOpen(false); setDeletingUser(null); }}
         onConfirm={handleDelete}
         title="Delete User"
-        description={`Are you sure you want to delete "${deletingUser?.name}"? This action cannot be undone.`}
+        description={`Are you sure you want to delete "${deletingUser?.full_name}"? This action cannot be undone.`}
         confirmLabel="Delete"
         loading={deleting}
       />
@@ -587,22 +568,33 @@ export default function UsersPage() {
       {/* Status Toggle Confirmation */}
       <ConfirmDialog
         open={statusDialogOpen}
-        onClose={() => {
-          setStatusDialogOpen(false);
-          setStatusUser(null);
-        }}
+        onClose={() => { setStatusDialogOpen(false); setStatusUser(null); }}
         onConfirm={handleStatusToggle}
-        title={
-          statusUser?.status === "active" ? "Deactivate User" : "Activate User"
-        }
+        title={statusUser?.is_active ? "Deactivate User" : "Activate User"}
         description={
-          statusUser?.status === "active"
-            ? `Are you sure you want to deactivate "${statusUser?.name}"? They will no longer be able to log in.`
-            : `Are you sure you want to activate "${statusUser?.name}"? They will be able to log in again.`
+          statusUser?.is_active
+            ? `Are you sure you want to deactivate "${statusUser?.full_name}"? They will no longer be able to log in.`
+            : `Are you sure you want to activate "${statusUser?.full_name}"? They will be able to log in again.`
         }
-        confirmLabel={statusUser?.status === "active" ? "Deactivate" : "Activate"}
-        variant={statusUser?.status === "active" ? "destructive" : "default"}
+        confirmLabel={statusUser?.is_active ? "Deactivate" : "Activate"}
+        variant={statusUser?.is_active ? "destructive" : "default"}
         loading={togglingStatus}
+      />
+
+      {/* Login Toggle Confirmation */}
+      <ConfirmDialog
+        open={loginDialogOpen}
+        onClose={() => { setLoginDialogOpen(false); setLoginUser(null); }}
+        onConfirm={handleLoginToggle}
+        title={loginUser?.can_login ? "Disable Login" : "Enable Login"}
+        description={
+          loginUser?.can_login
+            ? `Are you sure you want to disable login for "${loginUser?.full_name}"?`
+            : `Are you sure you want to enable login for "${loginUser?.full_name}"?`
+        }
+        confirmLabel={loginUser?.can_login ? "Disable" : "Enable"}
+        variant={loginUser?.can_login ? "destructive" : "default"}
+        loading={togglingLogin}
       />
     </div>
   );
