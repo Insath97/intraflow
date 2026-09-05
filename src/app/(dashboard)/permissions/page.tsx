@@ -1,15 +1,13 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/common/page-header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Dialog } from "@/components/ui/dialog";
-import { ConfirmDialog } from "@/components/common/confirm-dialog";
-import { useToast } from "@/components/ui/toast";
+
 import {
   ChevronDown,
   ChevronRight,
@@ -25,15 +23,12 @@ import {
   ArrowUp,
   ArrowDown,
   Loader2,
-  Plus,
-  Pencil,
-  Trash2,
+  Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   permissionService,
   type PermissionItem,
-  type PermissionCreatePayload,
 } from "@/services/permission.service";
 
 interface GroupedPermissions {
@@ -55,15 +50,8 @@ const defaultFilters: Filters = {
   sort_order: "desc",
 };
 
-const emptyForm: PermissionCreatePayload = {
-  group_name: "",
-  permission_name: "",
-  display_name: "",
-  description: "",
-};
-
 export default function PermissionsPage() {
-  const { toast } = useToast();
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const [permissions, setPermissions] = useState<PermissionItem[]>([]);
@@ -72,17 +60,6 @@ export default function PermissionsPage() {
   const [error, setError] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<Filters>(defaultFilters);
-
-  // Form modal
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<PermissionCreatePayload>(emptyForm);
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-  const [isSaving, setIsSaving] = useState(false);
-
-  // Delete
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchPermissions = useCallback(async () => {
     setIsLoading(true);
@@ -97,7 +74,7 @@ export default function PermissionsPage() {
         setPermissions(permRes.value.data.data.items);
       }
       if (groupsRes.status === "fulfilled" && groupsRes.value.data.status === "success") {
-        const unique = [...new Set(groupsRes.value.data.data.map((g) => g.group_name))];
+        const unique = Array.from(new Set(groupsRes.value.data.data.map((g) => g.group_name)));
         setGroupNames(unique);
       }
     } catch {
@@ -184,89 +161,6 @@ export default function PermissionsPage() {
     setFilters((prev) => ({ ...prev, [key]: value }));
   }
 
-  // ---- Form ----
-  function openCreate() {
-    setEditingId(null);
-    setForm(emptyForm);
-    setFormErrors({});
-    setShowForm(true);
-  }
-
-  function openEdit(perm: PermissionItem) {
-    setEditingId(perm.id);
-    setForm({
-      group_name: perm.group_name,
-      permission_name: perm.permission_name,
-      display_name: perm.display_name,
-      description: perm.description || "",
-    });
-    setFormErrors({});
-    setShowForm(true);
-  }
-
-  function validateForm(): boolean {
-    const errors: Record<string, string> = {};
-    if (!form.group_name.trim()) errors.group_name = "Group name is required";
-    if (!form.permission_name.trim()) errors.permission_name = "Permission name is required";
-    if (form.permission_name && !/^[a-z_]+$/.test(form.permission_name)) {
-      errors.permission_name = "Lowercase letters and underscores only";
-    }
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  }
-
-  async function handleSave() {
-    if (!validateForm()) return;
-    setIsSaving(true);
-    try {
-      if (editingId) {
-        const res = await permissionService.update(editingId, form);
-        if (res.data.status === "success") {
-          toast("Permission updated successfully", "success");
-          setShowForm(false);
-          fetchPermissions();
-        } else {
-          toast(res.data.message || "Update failed", "error");
-        }
-      } else {
-        const res = await permissionService.create(form);
-        if (res.data.status === "success") {
-          toast("Permission created successfully", "success");
-          setShowForm(false);
-          fetchPermissions();
-        } else {
-          toast(res.data.message || "Create failed", "error");
-        }
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Something went wrong";
-      toast(msg, "error");
-    } finally {
-      setIsSaving(false);
-    }
-  }
-
-  // ---- Delete ----
-  async function handleDelete() {
-    if (!deletingId) return;
-    setIsDeleting(true);
-    try {
-      const res = await permissionService.delete(deletingId);
-      if (res.data.status === "success") {
-        toast("Permission deleted successfully", "success");
-        setDeletingId(null);
-        fetchPermissions();
-      } else {
-        toast(res.data.message || "Delete failed", "error");
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Something went wrong";
-      toast(msg, "error");
-    } finally {
-      setIsDeleting(false);
-    }
-  }
-
   const groupIcons: Record<string, typeof Shield> = {
     "PERSON MANAGEMENT": Shield,
     "USER MANAGEMENT": Key,
@@ -326,10 +220,6 @@ export default function PermissionsPage() {
             <Button variant="outline" size="sm" onClick={collapseAll}>
               Collapse All
             </Button>
-            <Button size="sm" onClick={openCreate}>
-              <Plus className="mr-1.5 h-4 w-4" />
-              Add Permission
-            </Button>
           </div>
         }
       />
@@ -385,8 +275,8 @@ export default function PermissionsPage() {
                 className="block w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 transition-colors focus:border-[#FF6B00] focus:outline-none focus:ring-1 focus:ring-[#FF6B00]/30 dark:border-white/10 dark:bg-[#1A1D2E] dark:text-white"
               >
                 <option value="">All Groups</option>
-                {groupNames.map((name) => (
-                  <option key={name} value={name}>
+                {groupNames.map((name, idx) => (
+                  <option key={`${name}-${idx}`} value={name}>
                     {name}
                   </option>
                 ))}
@@ -508,7 +398,7 @@ export default function PermissionsPage() {
                           Status
                         </th>
                         <th className="px-6 py-2.5 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                          Actions
+                          <span className="sr-only">Actions</span>
                         </th>
                       </tr>
                     </thead>
@@ -516,7 +406,8 @@ export default function PermissionsPage() {
                       {group.permissions.map((perm) => (
                         <tr
                           key={perm.id}
-                          className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                          className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                          onClick={() => router.push(`/permissions/${perm.id}`)}
                         >
                           <td className="px-6 py-3">
                             <div className="flex items-center gap-2">
@@ -544,20 +435,16 @@ export default function PermissionsPage() {
                             </Badge>
                           </td>
                           <td className="px-6 py-3">
-                            <div className="flex items-center justify-end gap-1">
+                            <div className="flex items-center justify-end">
                               <button
-                                onClick={() => openEdit(perm)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  router.push(`/permissions/${perm.id}`);
+                                }}
                                 className="rounded-lg p-1.5 text-gray-400 hover:bg-[#FFF3EB] hover:text-[#FF6B00] dark:hover:bg-[#E55A00]/20 dark:hover:text-[#FF9A5C] transition-colors"
-                                title="Edit"
+                                title="View Details"
                               >
-                                <Pencil className="h-4 w-4" />
-                              </button>
-                              <button
-                                onClick={() => setDeletingId(perm.id)}
-                                className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/20 dark:hover:text-red-400 transition-colors"
-                                title="Delete"
-                              >
-                                <Trash2 className="h-4 w-4" />
+                                <Eye className="h-4 w-4" />
                               </button>
                             </div>
                           </td>
@@ -585,101 +472,6 @@ export default function PermissionsPage() {
           </Card>
         )}
       </div>
-
-      {/* Create / Edit Modal */}
-      <Dialog
-        open={showForm}
-        onClose={() => setShowForm(false)}
-        title={editingId ? "Edit Permission" : "Create Permission"}
-        footer={
-          <>
-            <Button variant="outline" onClick={() => setShowForm(false)} disabled={isSaving}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave} disabled={isSaving}>
-              {isSaving ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : editingId ? (
-                "Update"
-              ) : (
-                "Create"
-              )}
-            </Button>
-          </>
-        }
-      >
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="group_name" className="mb-1.5">
-              Group Name <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="group_name"
-              placeholder="e.g. User Management"
-              value={form.group_name}
-              onChange={(e) => setForm((p) => ({ ...p, group_name: e.target.value }))}
-              className={cn(formErrors.group_name && "border-red-500")}
-            />
-            {formErrors.group_name && (
-              <p className="mt-1 text-xs text-red-500">{formErrors.group_name}</p>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="permission_name" className="mb-1.5">
-              Permission Name <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="permission_name"
-              placeholder="e.g. create_user (lowercase, underscores)"
-              value={form.permission_name}
-              onChange={(e) => setForm((p) => ({ ...p, permission_name: e.target.value }))}
-              className={cn(formErrors.permission_name && "border-red-500")}
-            />
-            {formErrors.permission_name && (
-              <p className="mt-1 text-xs text-red-500">{formErrors.permission_name}</p>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="display_name" className="mb-1.5">
-              Display Name
-            </Label>
-            <Input
-              id="display_name"
-              placeholder="e.g. Create User (auto-generated if empty)"
-              value={form.display_name}
-              onChange={(e) => setForm((p) => ({ ...p, display_name: e.target.value }))}
-            />
-          </div>
-          <div>
-            <Label htmlFor="description" className="mb-1.5">
-              Description
-            </Label>
-            <textarea
-              id="description"
-              placeholder="Optional description"
-              value={form.description}
-              onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
-              rows={3}
-              className="block w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 transition-colors placeholder:text-gray-400 focus:border-[#FF6B00] focus:outline-none focus:ring-1 focus:ring-[#FF6B00]/30 dark:border-white/10 dark:bg-[#1A1D2E] dark:text-white dark:placeholder:text-gray-500"
-            />
-          </div>
-        </div>
-      </Dialog>
-
-      {/* Delete Confirmation */}
-      <ConfirmDialog
-        open={!!deletingId}
-        onClose={() => setDeletingId(null)}
-        onConfirm={handleDelete}
-        title="Delete Permission"
-        description="Are you sure you want to delete this permission? This action cannot be undone."
-        confirmLabel="Delete"
-        variant="destructive"
-        loading={isDeleting}
-      />
     </div>
   );
 }
