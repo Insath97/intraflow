@@ -2,7 +2,7 @@ export { authService } from "./auth.service";
 export { permissionService } from "./permission.service";
 export type { PermissionItem } from "./permission.service";
 export { UserService, userService } from "./user.service";
-export type { UserItem, UserSimple, UserStats, UserPagination, UserListParams } from "./user.service";
+export type { UserItem, UserSimple, UserStats, UserListResponse, UserListParams } from "./user.service";
 export { PersonService } from "./person.service";
 export { roleService, RoleService } from "./role.service";
 export type { RoleItem as RoleServiceItem, RoleSimple, RoleStats } from "./role.service";

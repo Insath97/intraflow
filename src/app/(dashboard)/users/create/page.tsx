@@ -10,8 +10,22 @@ import { PageHeader } from "@/components/common/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FormField } from "@/components/forms/form-field";
-import { UserPlus, ArrowLeft, Loader2, Upload, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  UserPlus,
+  ArrowLeft,
+  Loader2,
+  Upload,
+  X,
+  User,
+  Mail,
+  Lock,
+  Shield,
+  Briefcase,
+  Settings,
+  Image,
+  CheckCircle,
+} from "lucide-react";
 
 interface UserFormData {
   f_name: string;
@@ -160,57 +174,174 @@ export default function CreateUserPage() {
         }
       />
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* User Details Form */}
-        <div className="lg:col-span-2">
-          <Card>
+      <div className="grid gap-6 xl:grid-cols-3">
+        {/* Main Form */}
+        <div className="xl:col-span-2 space-y-6">
+          {/* Personal Information */}
+          <Card className="overflow-hidden">
+            <div className="border-b border-gray-100 bg-gray-50/50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#FFF3EB] text-[#FF6B00] dark:bg-[#E55A00]/20 dark:text-[#FF9A5C]">
+                  <User className="h-4.5 w-4.5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    Personal Information
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Basic details about the user
+                  </p>
+                </div>
+              </div>
+            </div>
             <CardContent className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-                User Details
-              </h3>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormField label="First Name" required error={errors.f_name}>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    First Name <span className="text-red-500">*</span>
+                  </label>
                   <Input
                     placeholder="Enter first name"
                     value={form.f_name}
                     onChange={(e) => setForm({ ...form, f_name: e.target.value })}
                     error={!!errors.f_name}
                   />
-                </FormField>
-                <FormField label="Last Name" required error={errors.l_name}>
+                  {errors.f_name && <p className="mt-1 text-xs text-red-500">{errors.f_name}</p>}
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Last Name <span className="text-red-500">*</span>
+                  </label>
                   <Input
                     placeholder="Enter last name"
                     value={form.l_name}
                     onChange={(e) => setForm({ ...form, l_name: e.target.value })}
                     error={!!errors.l_name}
                   />
-                </FormField>
-                <FormField label="Username" required error={errors.username}>
+                  {errors.l_name && <p className="mt-1 text-xs text-red-500">{errors.l_name}</p>}
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Email Address <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <Input
+                      type="email"
+                      placeholder="user@example.com"
+                      value={form.email}
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      error={!!errors.email}
+                      className="pl-9"
+                    />
+                  </div>
+                  {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Username <span className="text-red-500">*</span>
+                  </label>
                   <Input
                     placeholder="e.g. john_doe"
                     value={form.username}
                     onChange={(e) => setForm({ ...form, username: e.target.value })}
                     error={!!errors.username}
                   />
-                </FormField>
-                <FormField label="Email" required error={errors.email}>
-                  <Input
-                    type="email"
-                    placeholder="user@example.com"
-                    value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    error={!!errors.email}
-                  />
-                </FormField>
-                <FormField label="Employee Code" required error={errors.employee_code}>
+                  {errors.username && <p className="mt-1 text-xs text-red-500">{errors.username}</p>}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Employment Details */}
+          <Card className="overflow-hidden">
+            <div className="border-b border-gray-100 bg-gray-50/50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                  <Briefcase className="h-4.5 w-4.5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    Employment Details
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Work-related information and role assignment
+                  </p>
+                </div>
+              </div>
+            </div>
+            <CardContent className="p-6">
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Employee Code <span className="text-red-500">*</span>
+                  </label>
                   <Input
                     placeholder="e.g. EMP-001"
                     value={form.employee_code}
                     onChange={(e) => setForm({ ...form, employee_code: e.target.value })}
                     error={!!errors.employee_code}
                   />
-                </FormField>
-                <FormField label="Password" required error={errors.password}>
+                  {errors.employee_code && <p className="mt-1 text-xs text-red-500">{errors.employee_code}</p>}
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Role <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Shield className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <select
+                      value={form.role_id}
+                      onChange={(e) => setForm({ ...form, role_id: e.target.value })}
+                      className="flex h-9 w-full appearance-none rounded-lg border border-gray-300 bg-white pl-9 pr-3 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                    >
+                      <option value="">Select role</option>
+                      {roles.map((role) => (
+                        <option key={role.id} value={role.id}>
+                          {role.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {errors.role_id && <p className="mt-1 text-xs text-red-500">{errors.role_id}</p>}
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Designation
+                  </label>
+                  <Input
+                    placeholder="e.g. Software Engineer"
+                    value={form.designation}
+                    onChange={(e) => setForm({ ...form, designation: e.target.value })}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Security */}
+          <Card className="overflow-hidden">
+            <div className="border-b border-gray-100 bg-gray-50/50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+                  <Lock className="h-4.5 w-4.5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    Security & Access
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Password and access settings
+                  </p>
+                </div>
+              </div>
+            </div>
+            <CardContent className="p-6">
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Password <span className="text-red-500">*</span>
+                  </label>
                   <Input
                     type="password"
                     placeholder="Min. 6 characters"
@@ -218,84 +349,95 @@ export default function CreateUserPage() {
                     onChange={(e) => setForm({ ...form, password: e.target.value })}
                     error={!!errors.password}
                   />
-                </FormField>
-                <FormField label="Role" required error={errors.role_id}>
-                  <select
-                    value={form.role_id}
-                    onChange={(e) => setForm({ ...form, role_id: e.target.value })}
-                    className="flex h-9 w-full appearance-none rounded-lg border border-gray-300 bg-white px-3 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                  >
-                    <option value="">Select role</option>
-                    {roles.map((role) => (
-                      <option key={role.id} value={role.id}>
-                        {role.name}
-                      </option>
-                    ))}
-                  </select>
-                </FormField>
-                <FormField label="Designation">
-                  <Input
-                    placeholder="e.g. Software Engineer"
-                    value={form.designation}
-                    onChange={(e) => setForm({ ...form, designation: e.target.value })}
-                  />
-                </FormField>
-                <FormField label="Active Status" required>
-                  <select
-                    value={form.is_active ? "active" : "inactive"}
-                    onChange={(e) => setForm({ ...form, is_active: e.target.value === "active" })}
-                    className="flex h-9 w-full appearance-none rounded-lg border border-gray-300 bg-white px-3 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
-                </FormField>
-                <FormField label="Login Access" required>
-                  <select
-                    value={form.can_login ? "yes" : "no"}
-                    onChange={(e) => setForm({ ...form, can_login: e.target.value === "yes" })}
-                    className="flex h-9 w-full appearance-none rounded-lg border border-gray-300 bg-white px-3 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                  >
-                    <option value="yes">Can Login</option>
-                    <option value="no">Cannot Login</option>
-                  </select>
-                </FormField>
+                  {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password}</p>}
+                </div>
+                <div className="flex items-end gap-6">
+                  <div className="flex-1">
+                    <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Status
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, is_active: !form.is_active })}
+                      className="flex items-center gap-2.5"
+                    >
+                      <div className={`relative h-5 w-9 rounded-full transition-colors ${form.is_active ? "bg-[#FF6B00]" : "bg-gray-300 dark:bg-gray-600"}`}>
+                        <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${form.is_active ? "translate-x-4" : "translate-x-0.5"}`} />
+                      </div>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">
+                        {form.is_active ? "Active" : "Inactive"}
+                      </span>
+                    </button>
+                  </div>
+                  <div className="flex-1">
+                    <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Login Access
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, can_login: !form.can_login })}
+                      className="flex items-center gap-2.5"
+                    >
+                      <div className={`relative h-5 w-9 rounded-full transition-colors ${form.can_login ? "bg-[#FF6B00]" : "bg-gray-300 dark:bg-gray-600"}`}>
+                        <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${form.can_login ? "translate-x-4" : "translate-x-0.5"}`} />
+                      </div>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">
+                        {form.can_login ? "Enabled" : "Disabled"}
+                      </span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Profile Image + Actions */}
-        <div className="lg:col-span-1">
-          <Card>
+        {/* Sidebar */}
+        <div className="xl:col-span-1 space-y-6">
+          {/* Profile Image */}
+          <Card className="overflow-hidden">
+            <div className="border-b border-gray-100 bg-gray-50/50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">
+                  <Image className="h-4.5 w-4.5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    Profile Image
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Upload a profile photo
+                  </p>
+                </div>
+              </div>
+            </div>
             <CardContent className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-                Profile Image
-              </h3>
-              <div className="flex flex-col items-center gap-4">
-                <div className="relative">
+              <div className="flex flex-col items-center">
+                <div className="relative mb-4">
                   {imagePreview ? (
                     <div className="relative">
                       <img
                         src={imagePreview}
                         alt="Preview"
-                        className="h-32 w-32 rounded-full object-cover border-4 border-gray-200 dark:border-gray-700"
+                        className="h-28 w-28 rounded-2xl object-cover ring-4 ring-gray-100 dark:ring-gray-800"
                       />
                       <button
                         type="button"
                         onClick={removeImage}
-                        className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600"
+                        className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600 transition-colors"
                       >
-                        <X className="h-3 w-3" />
+                        <X className="h-3.5 w-3.5" />
                       </button>
                     </div>
                   ) : (
-                    <div
+                    <button
+                      type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex h-32 w-32 cursor-pointer items-center justify-center rounded-full border-2 border-dashed border-gray-300 bg-gray-50 hover:border-[#FF6B00] hover:bg-[#FFF3EB] dark:border-gray-600 dark:bg-gray-800 dark:hover:border-[#FF6B00]"
+                      className="flex h-28 w-28 cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 transition-all hover:border-[#FF6B00] hover:bg-[#FFF3EB] dark:border-gray-700 dark:bg-gray-800 dark:hover:border-[#FF6B00]"
                     >
-                      <Upload className="h-8 w-8 text-gray-400" />
-                    </div>
+                      <Upload className="h-6 w-6 text-gray-400" />
+                      <span className="text-[10px] font-medium text-gray-400">Upload</span>
+                    </button>
                   )}
                 </div>
                 <input
@@ -305,32 +447,81 @@ export default function CreateUserPage() {
                   onChange={handleImageChange}
                   className="hidden"
                 />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                  type="button"
-                >
-                  <Upload className="mr-2 h-4 w-4" />
-                  Choose Image
-                </Button>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-center text-xs text-gray-500 dark:text-gray-400">
                   JPG, PNG or GIF. Max 5MB.
                 </p>
               </div>
+            </CardContent>
+          </Card>
 
-              <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800">
-                <Button onClick={handleSave} disabled={saving} className="w-full">
-                  {saving ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <UserPlus className="mr-2 h-4 w-4" />
-                  )}
-                  {saving ? "Saving..." : "Create User"}
-                </Button>
+          {/* Quick Summary */}
+          <Card className="overflow-hidden">
+            <div className="border-b border-gray-100 bg-gray-50/50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
+                  <Settings className="h-4.5 w-4.5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    Summary
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Review before saving
+                  </p>
+                </div>
+              </div>
+            </div>
+            <CardContent className="p-6">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Name</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    {form.f_name && form.l_name ? `${form.f_name} ${form.l_name}` : "-"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Email</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    {form.email || "-"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Username</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    {form.username || "-"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Role</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    {roles.find((r) => r.id === form.role_id)?.name || "-"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Status</span>
+                  <Badge variant={form.is_active ? "default" : "secondary"}>
+                    {form.is_active ? "Active" : "Inactive"}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Login</span>
+                  <Badge variant={form.can_login ? "default" : "secondary"}>
+                    {form.can_login ? "Enabled" : "Disabled"}
+                  </Badge>
+                </div>
               </div>
             </CardContent>
           </Card>
+
+          {/* Save Button */}
+          <Button onClick={handleSave} disabled={saving} className="w-full" size="lg">
+            {saving ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <UserPlus className="mr-2 h-4 w-4" />
+            )}
+            {saving ? "Creating User..." : "Create User"}
+          </Button>
         </div>
       </div>
     </div>

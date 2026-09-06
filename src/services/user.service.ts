@@ -40,11 +40,12 @@ export interface UserStats {
   by_role: Record<string, number>;
 }
 
-export interface UserPagination {
-  current_page: number;
-  per_page: number;
-  total_pages: number;
+export interface UserListResponse {
+  items: UserItem[];
   total_count: number;
+  page: number;
+  size: number;
+  total_pages: number;
   has_next: boolean;
   has_prev: boolean;
 }
@@ -78,9 +79,7 @@ export const userService = {
     if (params?.page) q.set("page", String(params.page));
     if (params?.size) q.set("size", String(params.size));
     const qs = q.toString();
-    return api.get<ApiResponse<{ items: UserItem[]; pagination: UserPagination }>>(
-      `/users${qs ? `?${qs}` : ""}`
-    );
+    return api.get<ApiResponse<UserListResponse>>(`/users${qs ? `?${qs}` : ""}`);
   },
 
   getById: (id: string) =>

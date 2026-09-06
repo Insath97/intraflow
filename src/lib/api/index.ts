@@ -2,7 +2,7 @@ export { default as api, setAccessToken, getAccessToken } from "./axios-client";
 export { personsApi } from "./persons";
 export { usersApi } from "./users";
 export type { UserItem, UserListParams } from "./users";
-export type { UserSimple, UserStats, UserPagination } from "@/services/user.service";
+export type { UserSimple, UserStats, UserListResponse } from "@/services/user.service";
 export { rolesApi } from "./roles";
 export type { RoleItem, RoleSimple, RoleStats, RolePagination, RoleListParams } from "./roles";
 export { territoriesApi } from "./territories";
