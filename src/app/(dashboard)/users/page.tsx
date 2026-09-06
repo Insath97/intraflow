@@ -86,13 +86,14 @@ export default function UsersPage() {
       if (debouncedSearch) params.search = debouncedSearch;
       if (statusFilter === "active") params.is_active = true;
       if (statusFilter === "inactive") params.is_active = false;
-      if (roleFilter) params.role_id = roleFilter;
+      if (roleFilter === "true") params.can_login = true;
+      if (roleFilter === "false") params.can_login = false;
 
-      const res = await userService.getAll(params as { search?: string; role_id?: string; is_active?: boolean; page?: number; size?: number });
+      const res = await userService.getAll(params as { search?: string; role_id?: string; is_active?: boolean; can_login?: boolean; page?: number; size?: number });
       if (res.data.status === "success" && res.data.data) {
         setUsers(res.data.data.items);
-        setTotalCount(res.data.data.pagination.total_count);
-        setTotalPages(res.data.data.pagination.total_pages);
+        setTotalCount(res.data.data.total_count);
+        setTotalPages(res.data.data.total_pages);
       }
     } catch {
       toast("Failed to load users", "error");
