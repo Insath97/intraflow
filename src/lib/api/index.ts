@@ -5,6 +5,8 @@ export type { UserItem, UserListParams } from "./users";
 export type { UserSimple, UserStats, UserListResponse } from "@/services/user.service";
 export { rolesApi } from "./roles";
 export type { RoleItem, RoleSimple, RoleStats, RolePagination, RoleListParams } from "./roles";
+export { departmentService } from "./departments";
+export type { DepartmentItem, DepartmentSimple, DepartmentStats, DepartmentListResponse, DepartmentListParams } from "./departments";
 export { territoriesApi } from "./territories";
 export { auditLogsApi, MODULES, ACTIONS } from "./audit-logs";
 export { reportsApi } from "./reports";

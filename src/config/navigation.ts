@@ -9,10 +9,11 @@ import {
   Settings,
   Heart,
   BarChart3,
-  Home,
-  UserCheck,
-  FileText,
+  Building,
   Activity,
+  Calendar,
+  FileText,
+  Bell,
 } from "lucide-react";
 
 export interface NavItem {
@@ -35,69 +36,66 @@ export const navigation: NavGroup[] = [
         label: "Dashboard",
         href: "/dashboard",
         icon: LayoutDashboard,
-        permission: "dashboard.view",
       },
     ],
   },
   {
-    title: "PERSON MANAGEMENT",
+    title: "PEOPLE",
     items: [
       {
-        label: "All Persons",
+        label: "Persons",
         href: "/persons",
         icon: Heart,
-        permission: "persons.view",
       },
-      {
-        label: "Register Person",
-        href: "/persons/create",
-        icon: UserPlus,
-        permission: "persons.create",
-      },
-    ],
-  },
-  {
-    title: "LOCATION MANAGEMENT",
-    items: [
-      {
-        label: "Territories",
-        href: "/territories",
-        icon: MapPin,
-        permission: "territories.view",
-      },
-    ],
-  },
-  {
-    title: "ACCESS MANAGEMENT",
-    items: [
       {
         label: "Users",
         href: "/users",
         icon: Users,
-        permission: "users.view",
       },
+    ],
+  },
+  {
+    title: "ORGANIZATION",
+    items: [
+      {
+        label: "Departments",
+        href: "/departments",
+        icon: Building,
+      },
+      {
+        label: "Territories",
+        href: "/territories",
+        icon: MapPin,
+      },
+    ],
+  },
+  {
+    title: "PROJECTS & TASKS",
+    items: [
+      {
+        label: "Projects",
+        href: "/projects",
+        icon: FileText,
+      },
+      {
+        label: "Daily Updates",
+        href: "/daily-updates",
+        icon: Calendar,
+      },
+    ],
+  },
+  {
+    title: "ACCESS CONTROL",
+    items: [
       {
         label: "Roles",
         href: "/roles",
         icon: ShieldCheck,
-        permission: "roles.view",
       },
       {
         label: "Permissions",
         href: "/permissions",
         icon: Lock,
-        permission: "roles.view",
-      },
-    ],
-  },
-  {
-    title: "REPORTING",
-    items: [
-      {
-        label: "Reports",
-        href: "/reports",
-        icon: BarChart3,
-        permission: "reports.view",
       },
     ],
   },
@@ -105,16 +103,19 @@ export const navigation: NavGroup[] = [
     title: "SYSTEM",
     items: [
       {
-        label: "Audit Logs",
+        label: "Notifications",
+        href: "/notifications",
+        icon: Bell,
+      },
+      {
+        label: "Activity Logs",
         href: "/audit-logs",
-        icon: ClipboardList,
-        permission: "audit_logs.view",
+        icon: Activity,
       },
       {
         label: "Settings",
         href: "/settings",
         icon: Settings,
-        permission: "settings.view",
       },
     ],
   },
