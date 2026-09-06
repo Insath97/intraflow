@@ -432,7 +432,7 @@ export default function UsersPage() {
                         </div>
                         <div>
                           <p className="font-medium text-gray-900 dark:text-gray-100">{user.full_name}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">{user.designation || "-"}</p>
+                          {user.designation && <p className="text-xs text-gray-500 dark:text-gray-400">{user.designation}</p>}
                         </div>
                       </div>
                     </td>
