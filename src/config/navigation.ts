@@ -47,11 +47,6 @@ export const navigation: NavGroup[] = [
         href: "/persons",
         icon: Heart,
       },
-      {
-        label: "Users",
-        href: "/users",
-        icon: Users,
-      },
     ],
   },
   {
@@ -87,6 +82,11 @@ export const navigation: NavGroup[] = [
   {
     title: "ACCESS CONTROL",
     items: [
+      {
+        label: "Users",
+        href: "/users",
+        icon: Users,
+      },
       {
         label: "Roles",
         href: "/roles",
