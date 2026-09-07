@@ -43,9 +43,9 @@ import {
   File,
 } from "lucide-react";
 
-const GREEN = "#168B61";
-const GREEN_LIGHT = "#4ADE80";
-const COLORS = ["#168B61", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4", "#84cc16"];
+const ORANGE = "#FF6B00";
+const ORANGE_LIGHT = "#FF9A5C";
+const COLORS = ["#FF6B00", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4", "#84cc16"];
 
 interface Filters {
   provinceId: string;
@@ -322,7 +322,7 @@ export default function ReportsPage() {
       counts[p.status] = (counts[p.status] || 0) + 1;
     });
     const colorMap: Record<string, string> = {
-      active: GREEN,
+      active: ORANGE,
       inactive: "#6b7280",
       pending: "#f59e0b",
       deceased: "#ef4444",
@@ -349,7 +349,7 @@ export default function ReportsPage() {
   const supportTypeChartData = useMemo(() => {
     const data = assistanceData;
     return [
-      { name: "Government", value: data.governmentAssistance, fill: GREEN },
+      { name: "Government", value: data.governmentAssistance, fill: ORANGE },
       { name: "Medical", value: data.medicalAssistance, fill: "#3b82f6" },
       { name: "Education", value: data.educationSupport, fill: "#f59e0b" },
       { name: "Employment", value: data.employmentSupport, fill: "#8b5cf6" },
@@ -401,7 +401,7 @@ export default function ReportsPage() {
           className="flex w-full items-center justify-between p-6 pb-0"
         >
           <div className="flex items-center gap-2">
-            <Filter className="h-5 w-5 text-[#168B61]" />
+            <Filter className="h-5 w-5 text-[#FF6B00]" />
             <h3 className="font-semibold text-gray-900 dark:text-gray-100">
               Report Filters
             </h3>
@@ -638,7 +638,7 @@ export default function ReportsPage() {
                       />
                       <YAxis />
                       <Tooltip />
-                      <Bar dataKey="value" fill={GREEN} radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="value" fill={ORANGE} radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
@@ -667,7 +667,7 @@ export default function ReportsPage() {
                         tick={{ fontSize: 11 }}
                       />
                       <Tooltip />
-                      <Bar dataKey="value" fill={GREEN} radius={[0, 4, 4, 0]} />
+                      <Bar dataKey="value" fill={ORANGE} radius={[0, 4, 4, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
@@ -790,7 +790,7 @@ export default function ReportsPage() {
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       Receiving Gov. Assistance
                     </p>
-                    <p className="mt-1 text-2xl font-bold text-[#168B61]">
+                    <p className="mt-1 text-2xl font-bold text-[#FF6B00]">
                       {assistanceData.governmentAssistance}
                     </p>
                   </div>
@@ -829,11 +829,11 @@ export default function ReportsPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-center dark:border-green-800 dark:bg-green-900/20">
-                    <p className="text-sm text-green-700 dark:text-green-400">
+                  <div className="rounded-lg border border-orange-200 bg-orange-50 p-4 text-center dark:border-orange-800 dark:bg-orange-900/20">
+                    <p className="text-sm text-orange-700 dark:text-orange-400">
                       Certified
                     </p>
-                    <p className="mt-1 text-2xl font-bold text-green-700 dark:text-green-400">
+                    <p className="mt-1 text-2xl font-bold text-orange-700 dark:text-orange-400">
                       {assistanceData.certified}
                     </p>
                   </div>
@@ -867,7 +867,7 @@ export default function ReportsPage() {
                     <span className="text-sm text-gray-500 dark:text-gray-400">
                       Employed
                     </span>
-                    <span className="font-semibold text-[#168B61]">
+                    <span className="font-semibold text-[#FF6B00]">
                       {assistanceData.employed}
                     </span>
                   </div>
@@ -973,9 +973,9 @@ export default function ReportsPage() {
                       <Line
                         type="monotone"
                         dataKey="Registrations"
-                        stroke={GREEN}
+                        stroke={ORANGE}
                         strokeWidth={2}
-                        dot={{ fill: GREEN, strokeWidth: 2, r: 4 }}
+                        dot={{ fill: ORANGE, strokeWidth: 2, r: 4 }}
                         activeDot={{ r: 6 }}
                       />
                     </LineChart>

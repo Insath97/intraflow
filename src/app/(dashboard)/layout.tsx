@@ -14,25 +14,29 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, fetchUser, user } = useAuthStore();
   const { sidebarOpen } = useAppStore();
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
+    if (!isAuthenticated && !user) {
+      fetchUser().then(() => {
+        if (!useAuthStore.getState().isAuthenticated) {
+          router.push("/login");
+        }
+      });
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, user, fetchUser, router]);
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !user) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <div className="flex h-screen items-center justify-center bg-[#F5F5F5] dark:bg-[#0F1117]">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#FF6B00] border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background dark:bg-gray-950">
+    <div className="min-h-screen bg-[#F5F5F5] dark:bg-[#0F1117]">
       <Sidebar />
       <div
         className={cn(

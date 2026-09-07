@@ -34,7 +34,7 @@ function PageHeader({
                 <button
                   type="button"
                   onClick={crumb.onClick}
-                  className="hover:text-[#168B61] dark:hover:text-[#4ADE80] transition-colors"
+                  className="hover:text-[#FF6B00] transition-colors"
                 >
                   {crumb.label}
                 </button>
@@ -47,7 +47,7 @@ function PageHeader({
       )}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {title}
           </h1>
           {description && (

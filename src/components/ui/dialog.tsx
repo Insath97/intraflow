@@ -40,7 +40,7 @@ function Dialog({ open, onClose, title, children, footer, className }: DialogPro
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in-0"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in-0"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -51,13 +51,13 @@ function Dialog({ open, onClose, title, children, footer, className }: DialogPro
         aria-label={title}
         tabIndex={-1}
         className={cn(
-          "relative z-50 w-full max-w-lg rounded-xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-900 animate-in fade-in-0 zoom-in-95",
+          "relative z-50 w-full max-w-lg rounded-2xl border border-gray-200 bg-white p-6 shadow-xl dark:border-white/10 dark:bg-[#1A1D2E] animate-in fade-in-0 zoom-in-95",
           className
         )}
       >
         {title && (
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
               {title}
             </h2>
             <button

@@ -3,22 +3,22 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#168B61] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
         default:
-          "bg-[#168B61] text-white hover:bg-[#0F684A] dark:bg-[#168B61] dark:hover:bg-[#0F684A]",
+          "bg-[#FF6B00] text-white hover:bg-[#E55A00] dark:bg-[#FF6B00] dark:hover:bg-[#E55A00]",
         destructive:
           "bg-red-500 text-white hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700",
         outline:
-          "border border-gray-300 bg-white hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700",
+          "border border-gray-300 bg-white hover:bg-gray-50 dark:border-white/10 dark:bg-transparent dark:text-white dark:hover:bg-white/5",
         secondary:
-          "bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600",
+          "bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-white/10 dark:text-white dark:hover:bg-white/15",
         ghost:
-          "hover:bg-gray-100 dark:hover:bg-gray-800",
+          "hover:bg-gray-100 dark:hover:bg-white/5 dark:text-white",
         link:
-          "text-[#168B61] underline-offset-4 hover:underline dark:text-[#4ADE80]",
+          "text-[#FF6B00] underline-offset-4 hover:underline dark:text-[#FF8C38]",
       },
       size: {
         default: "h-10 px-4 py-2",

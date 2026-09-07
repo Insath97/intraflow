@@ -1,16 +1,20 @@
 "use client";
 
 import { useEffect } from "react";
-import { initializeAuth } from "@/lib/auth";
+import { usePathname } from "next/navigation";
+import { useAuthStore } from "@/lib/auth";
 import { initializeTheme } from "@/stores/app-store";
-import { seedData } from "@/services";
+import { ToastProvider } from "@/components/ui/toast";
 
 export function ClientProviders({ children }: { children: React.ReactNode }) {
-  useEffect(() => {
-    seedData();
-    initializeAuth();
-    initializeTheme();
-  }, []);
+  const pathname = usePathname();
 
-  return <>{children}</>;
+  useEffect(() => {
+    initializeTheme();
+    if (pathname !== "/login") {
+      useAuthStore.getState().fetchUser();
+    }
+  }, [pathname]);
+
+  return <ToastProvider>{children}</ToastProvider>;
 }

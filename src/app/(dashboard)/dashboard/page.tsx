@@ -15,9 +15,9 @@ import {
   Heart,
   ShieldCheck,
   Clock,
-  AlertCircle,
   ArrowRight,
   RefreshCw,
+  Calendar,
 } from "lucide-react";
 import {
   BarChart,
@@ -40,9 +40,9 @@ import { useAuthStore } from "@/lib/auth";
 import { formatDate, getAgeGroup } from "@/lib/utils";
 import type { Person, DashboardStats, ChartDataPoint, MonthlyRegistration } from "@/types";
 
-const GENDER_COLORS = ["#3B82F6", "#EC4899", "#8B5CF6"];
-const AGE_COLORS = ["#F59E0B", "#168B61", "#EF4444"];
-const ASSISTANCE_COLORS = ["#168B61", "#3B82F6", "#8B5CF6", "#F59E0B", "#EF4444"];
+const GENDER_COLORS = ["#FF6B00", "#3B82F6", "#8B5CF6"];
+const AGE_COLORS = ["#FF6B00", "#3B82F6", "#F59E0B"];
+const ASSISTANCE_COLORS = ["#FF6B00", "#3B82F6", "#8B5CF6", "#F59E0B", "#EF4444"];
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -141,7 +141,7 @@ export default function DashboardPage() {
     const edu = allPersons.filter((p) => p.educationSupport).length;
     const emp = allPersons.filter((p) => p.employmentSupport).length;
     return [
-      { name: "Government", value: gov, icon: ShieldCheck, color: "#168B61" },
+      { name: "Government", value: gov, icon: ShieldCheck, color: "#FF6B00" },
       { name: "Medical", value: medical, icon: Stethoscope, color: "#3B82F6" },
       { name: "Education", value: edu, icon: GraduationCap, color: "#8B5CF6" },
       { name: "Employment", value: emp, icon: Briefcase, color: "#F59E0B" },
@@ -155,7 +155,7 @@ export default function DashboardPage() {
     const student = allPersons.filter((p) => p.employmentStatus === "Student").length;
     const retired = allPersons.filter((p) => p.employmentStatus === "Retired").length;
     return [
-      { name: "Employed", value: employed, color: "#168B61" },
+      { name: "Employed", value: employed, color: "#FF6B00" },
       { name: "Self Employed", value: self, color: "#3B82F6" },
       { name: "Unemployed", value: unemployed, color: "#EF4444" },
       { name: "Student", value: student, color: "#F59E0B" },
@@ -186,7 +186,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <RefreshCw className="h-6 w-6 animate-spin text-primary" />
+        <RefreshCw className="h-6 w-6 animate-spin text-[#FF6B00]" />
       </div>
     );
   }
@@ -196,102 +196,120 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary dark:text-white">
-            Dashboard
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Overview
           </h1>
-          <p className="text-sm text-text-muted dark:text-gray-400">
-            Welcome back, {user?.name || "Administrator"}
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Here&apos;s the summary of overall data
           </p>
         </div>
         <div className="hidden items-center sm:flex">
-          <div className="rounded-lg border border-border bg-surface px-4 py-2 dark:border-gray-700 dark:bg-gray-800">
+          <div className="rounded-xl border border-gray-200 bg-white px-4 py-2 dark:border-white/5 dark:bg-[#1A1D2E]">
             <div className="flex items-center gap-3">
               <div className="text-right">
-                <p className="text-xs font-medium text-text-muted dark:text-gray-400">
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
                   {now.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
                 </p>
-                <p className="text-lg font-bold tabular-nums text-primary">
+                <p className="text-lg font-bold tabular-nums text-[#FF6B00]">
                   {now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
                 </p>
               </div>
-              <div className="h-8 w-px bg-border dark:bg-gray-700" />
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
-                <Clock className="h-4 w-4 text-primary" />
+              <div className="h-8 w-px bg-gray-200 dark:bg-white/10" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#FF6B00]/10">
+                <Calendar className="h-4 w-4 text-[#FF6B00]" />
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Top Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="group rounded-xl border border-border bg-surface p-5 transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
-          <div className="flex items-center justify-between">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10">
-              <Users className="h-5 w-5 text-primary" />
+      {/* Top Stats - Orange Gradient Cards */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Total Persons - Primary Card */}
+        <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#FF6B00] to-[#E55A00] p-6 shadow-lg shadow-[#FF6B00]/20 transition-all hover:shadow-xl hover:shadow-[#FF6B00]/30">
+          <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/10" />
+          <div className="absolute -bottom-4 -right-4 h-16 w-16 rounded-full bg-white/5" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20">
+                <Users className="h-6 w-6 text-white" />
+              </div>
+              <span className="flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-white">
+                <TrendingUp className="h-3 w-3" />
+                +8.4%
+              </span>
             </div>
-            <span className="flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-600 dark:bg-green-900/30 dark:text-green-400">
-              <TrendingUp className="h-3 w-3" />
-              +8.4%
-            </span>
+            <p className="mt-4 text-3xl font-bold text-white">
+              {stats?.totalPersons.toLocaleString() || "0"}
+            </p>
+            <p className="text-sm text-white/70">Total Persons</p>
+            <button
+              onClick={() => router.push("/persons")}
+              className="mt-4 flex items-center gap-1 text-sm font-medium text-white/90 transition-colors hover:text-white"
+            >
+              See details <ArrowRight className="h-4 w-4" />
+            </button>
           </div>
-          <p className="mt-3 text-2xl font-bold text-text-primary dark:text-white">
-            {stats?.totalPersons.toLocaleString() || "0"}
-          </p>
-          <p className="text-sm text-text-muted dark:text-gray-400">Total Persons</p>
         </div>
 
-        <div className="group rounded-xl border border-border bg-surface p-5 transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
-          <div className="flex items-center justify-between">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/30">
-              <UserCheck className="h-5 w-5 text-blue-600" />
+        {/* Active Records */}
+        <div className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 transition-all hover:shadow-lg dark:border-white/5 dark:bg-[#1A1D2E]">
+          <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-[#FF6B00]/5" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#FF6B00]/10">
+                <UserCheck className="h-6 w-6 text-[#FF6B00]" />
+              </div>
+              <span className="flex items-center gap-1 rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-600 dark:bg-green-500/10 dark:text-green-400">
+                <TrendingUp className="h-3 w-3" />
+                +5.2%
+              </span>
             </div>
-            <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-              Active
-            </span>
+            <p className="mt-4 text-3xl font-bold text-gray-900 dark:text-white">
+              {stats?.activeRecords.toLocaleString() || "0"}
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Active Records</p>
+            <button
+              onClick={() => router.push("/persons")}
+              className="mt-4 flex items-center gap-1 text-sm font-medium text-gray-500 transition-colors hover:text-[#FF6B00] dark:text-gray-400"
+            >
+              View summary <ArrowRight className="h-4 w-4" />
+            </button>
           </div>
-          <p className="mt-3 text-2xl font-bold text-text-primary dark:text-white">
-            {stats?.activeRecords.toLocaleString() || "0"}
-          </p>
-          <p className="text-sm text-text-muted dark:text-gray-400">Active Records</p>
         </div>
 
-        <div className="group rounded-xl border border-border bg-surface p-5 transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
-          <div className="flex items-center justify-between">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-violet-50 dark:bg-violet-900/30">
-              <MapPin className="h-5 w-5 text-violet-600" />
+        {/* Registered This Month */}
+        <div className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 transition-all hover:shadow-lg dark:border-white/5 dark:bg-[#1A1D2E]">
+          <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-[#FF6B00]/5" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#FF6B00]/10">
+                <UserPlus className="h-6 w-6 text-[#FF6B00]" />
+              </div>
+              <span className="flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
+                <TrendingUp className="h-3 w-3" />
+                New
+              </span>
             </div>
-            <span className="rounded-full bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-600 dark:bg-violet-900/30 dark:text-violet-400">
-              Coverage
-            </span>
+            <p className="mt-4 text-3xl font-bold text-gray-900 dark:text-white">
+              {stats?.registeredThisMonth.toLocaleString() || "0"}
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Registered This Month</p>
+            <button
+              onClick={() => router.push("/persons/create")}
+              className="mt-4 flex items-center gap-1 text-sm font-medium text-gray-500 transition-colors hover:text-[#FF6B00] dark:text-gray-400"
+            >
+              Analyze performance <ArrowRight className="h-4 w-4" />
+            </button>
           </div>
-          <p className="mt-3 text-2xl font-bold text-text-primary dark:text-white">
-            {stats?.districts || "0"}
-          </p>
-          <p className="text-sm text-text-muted dark:text-gray-400">Districts Covered</p>
-        </div>
-
-        <div className="group rounded-xl border border-border bg-surface p-5 transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
-          <div className="flex items-center justify-between">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-900/30">
-              <UserPlus className="h-5 w-5 text-amber-600" />
-            </div>
-            <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
-              New
-            </span>
-          </div>
-          <p className="mt-3 text-2xl font-bold text-text-primary dark:text-white">
-            {stats?.registeredThisMonth.toLocaleString() || "0"}
-          </p>
-          <p className="text-sm text-text-muted dark:text-gray-400">Registered This Month</p>
         </div>
       </div>
 
       {/* Gender & Age Distribution */}
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Gender Distribution */}
-        <div className="rounded-xl border border-border bg-surface p-5 dark:border-gray-700 dark:bg-gray-800">
-          <h3 className="mb-4 text-sm font-semibold text-text-primary dark:text-white">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/5 dark:bg-[#1A1D2E]">
+          <h3 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
             Gender Distribution
           </h3>
           <div className="flex items-center justify-center">
@@ -312,10 +330,11 @@ export default function DashboardPage() {
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#fff",
-                    border: "1px solid #E5E7EB",
-                    borderRadius: "8px",
+                    backgroundColor: "#1A1D2E",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    borderRadius: "12px",
                     fontSize: "12px",
+                    color: "#fff",
                   }}
                 />
               </PieChart>
@@ -323,7 +342,7 @@ export default function DashboardPage() {
           </div>
           <div className="mt-2 flex justify-center gap-4">
             {genderData.map((d, i) => (
-              <div key={d.name} className="flex items-center gap-1.5 text-xs text-text-muted dark:text-gray-400">
+              <div key={d.name} className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
                 <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: GENDER_COLORS[i] }} />
                 {d.name} ({d.value})
               </div>
@@ -332,21 +351,22 @@ export default function DashboardPage() {
         </div>
 
         {/* Age Group */}
-        <div className="rounded-xl border border-border bg-surface p-5 dark:border-gray-700 dark:bg-gray-800">
-          <h3 className="mb-4 text-sm font-semibold text-text-primary dark:text-white">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/5 dark:bg-[#1A1D2E]">
+          <h3 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
             Age Group Distribution
           </h3>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={ageData} barSize={40}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#6B7280" }} />
+              <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "#fff",
-                  border: "1px solid #E5E7EB",
-                  borderRadius: "8px",
+                  backgroundColor: "#1A1D2E",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  borderRadius: "12px",
                   fontSize: "12px",
+                  color: "#fff",
                 }}
               />
               <Bar dataKey="count" radius={[6, 6, 0, 0]}>
@@ -359,8 +379,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Employment Status */}
-        <div className="rounded-xl border border-border bg-surface p-5 dark:border-gray-700 dark:bg-gray-800">
-          <h3 className="mb-4 text-sm font-semibold text-text-primary dark:text-white">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/5 dark:bg-[#1A1D2E]">
+          <h3 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
             Employment Status
           </h3>
           <div className="space-y-3">
@@ -369,10 +389,10 @@ export default function DashboardPage() {
               return (
                 <div key={item.name}>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-text-muted dark:text-gray-400">{item.name}</span>
-                    <span className="font-medium text-text-primary dark:text-white">{item.value} ({pct}%)</span>
+                    <span className="text-gray-500 dark:text-gray-400">{item.name}</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{item.value} ({pct}%)</span>
                   </div>
-                  <div className="mt-1 h-2 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
+                  <div className="mt-1 h-2 overflow-hidden rounded-full bg-gray-100 dark:bg-white/5">
                     <div
                       className="h-full rounded-full transition-all"
                       style={{ width: `${pct}%`, backgroundColor: item.color }}
@@ -388,59 +408,61 @@ export default function DashboardPage() {
       {/* Charts Row */}
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Persons by District */}
-        <div className="rounded-xl border border-border bg-surface p-5 dark:border-gray-700 dark:bg-gray-800">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/5 dark:bg-[#1A1D2E]">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-text-primary dark:text-white">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
               Persons by District
             </h3>
-            <span className="text-xs text-text-muted dark:text-gray-500">Top 8</span>
+            <span className="text-xs text-gray-500 dark:text-gray-500">Top 8</span>
           </div>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={districtData} barSize={24}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-35} textAnchor="end" height={60} />
-              <YAxis tick={{ fontSize: 11 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#6B7280" }} angle={-35} textAnchor="end" height={60} />
+              <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "#fff",
-                  border: "1px solid #E5E7EB",
-                  borderRadius: "8px",
+                  backgroundColor: "#1A1D2E",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  borderRadius: "12px",
                   fontSize: "12px",
+                  color: "#fff",
                 }}
               />
-              <Bar dataKey="count" fill="#168B61" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="count" fill="#FF6B00" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         {/* Monthly Registrations */}
-        <div className="rounded-xl border border-border bg-surface p-5 dark:border-gray-700 dark:bg-gray-800">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/5 dark:bg-[#1A1D2E]">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-text-primary dark:text-white">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
               Monthly Registrations
             </h3>
-            <span className="text-xs text-text-muted dark:text-gray-500">Trend</span>
+            <span className="text-xs text-gray-500 dark:text-gray-500">Trend</span>
           </div>
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={monthlyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-35} textAnchor="end" height={60} />
-              <YAxis tick={{ fontSize: 11 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#6B7280" }} angle={-35} textAnchor="end" height={60} />
+              <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "#fff",
-                  border: "1px solid #E5E7EB",
-                  borderRadius: "8px",
+                  backgroundColor: "#1A1D2E",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  borderRadius: "12px",
                   fontSize: "12px",
+                  color: "#fff",
                 }}
               />
               <Line
                 type="monotone"
                 dataKey="count"
-                stroke="#168B61"
+                stroke="#FF6B00"
                 strokeWidth={2.5}
-                dot={{ fill: "#168B61", r: 4 }}
-                activeDot={{ r: 6, fill: "#168B61" }}
+                dot={{ fill: "#FF6B00", r: 4 }}
+                activeDot={{ r: 6, fill: "#FF6B00" }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -450,8 +472,8 @@ export default function DashboardPage() {
       {/* Disability Types & Assistance Coverage */}
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Disability Types */}
-        <div className="rounded-xl border border-border bg-surface p-5 dark:border-gray-700 dark:bg-gray-800">
-          <h3 className="mb-4 text-sm font-semibold text-text-primary dark:text-white">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/5 dark:bg-[#1A1D2E]">
+          <h3 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
             Disability Types
           </h3>
           <div className="space-y-2.5">
@@ -461,12 +483,12 @@ export default function DashboardPage() {
               return (
                 <div key={item.name}>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-text-muted dark:text-gray-400">{item.name}</span>
-                    <span className="font-medium text-text-primary dark:text-white">{item.count}</span>
+                    <span className="text-gray-500 dark:text-gray-400">{item.name}</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{item.count}</span>
                   </div>
-                  <div className="mt-1 h-2 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
+                  <div className="mt-1 h-2 overflow-hidden rounded-full bg-gray-100 dark:bg-white/5">
                     <div
-                      className="h-full rounded-full bg-primary transition-all"
+                      className="h-full rounded-full bg-[#FF6B00] transition-all"
                       style={{ width: `${pct}%` }}
                     />
                   </div>
@@ -477,8 +499,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Assistance Coverage */}
-        <div className="rounded-xl border border-border bg-surface p-5 dark:border-gray-700 dark:bg-gray-800">
-          <h3 className="mb-4 text-sm font-semibold text-text-primary dark:text-white">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/5 dark:bg-[#1A1D2E]">
+          <h3 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
             Assistance Coverage
           </h3>
           <div className="grid grid-cols-2 gap-3">
@@ -488,16 +510,16 @@ export default function DashboardPage() {
               return (
                 <div
                   key={item.name}
-                  className="rounded-lg border border-border bg-background p-3 dark:border-gray-700 dark:bg-gray-900"
+                  className="rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-white/5 dark:bg-[#0F1117]"
                 >
                   <div className="flex items-center gap-2">
                     <Icon className="h-4 w-4" style={{ color: item.color }} />
-                    <span className="text-xs text-text-muted dark:text-gray-400">{item.name}</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{item.name}</span>
                   </div>
-                  <p className="mt-1 text-lg font-bold text-text-primary dark:text-white">
+                  <p className="mt-1 text-lg font-bold text-gray-900 dark:text-white">
                     {item.value}
                   </p>
-                  <p className="text-[10px] text-text-muted dark:text-gray-500">{pct}% coverage</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-500">{pct}% coverage</p>
                 </div>
               );
             })}
@@ -508,8 +530,8 @@ export default function DashboardPage() {
       {/* Certification & Equipment */}
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Certification Status */}
-        <div className="rounded-xl border border-border bg-surface p-5 dark:border-gray-700 dark:bg-gray-800">
-          <h3 className="mb-4 text-sm font-semibold text-text-primary dark:text-white">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/5 dark:bg-[#1A1D2E]">
+          <h3 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
             Certification Status
           </h3>
           <div className="flex items-center justify-center">
@@ -528,31 +550,32 @@ export default function DashboardPage() {
                   dataKey="value"
                   stroke="none"
                 >
-                  <Cell fill="#168B61" />
+                  <Cell fill="#FF6B00" />
                   <Cell fill="#F59E0B" />
                   <Cell fill="#EF4444" />
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#fff",
-                    border: "1px solid #E5E7EB",
-                    borderRadius: "8px",
+                    backgroundColor: "#1A1D2E",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    borderRadius: "12px",
                     fontSize: "12px",
+                    color: "#fff",
                   }}
                 />
               </PieChart>
             </ResponsiveContainer>
           </div>
           <div className="mt-2 flex justify-center gap-4">
-            <div className="flex items-center gap-1.5 text-xs text-text-muted dark:text-gray-400">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#168B61]" />
+            <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+              <span className="h-2.5 w-2.5 rounded-full bg-[#FF6B00]" />
               Certified ({certificationStats.certified})
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-text-muted dark:text-gray-400">
+            <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
               <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
               Pending ({certificationStats.pending})
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-text-muted dark:text-gray-400">
+            <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
               <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
               Not Certified ({certificationStats.notCertified})
             </div>
@@ -560,8 +583,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Equipment Requirements */}
-        <div className="rounded-xl border border-border bg-surface p-5 dark:border-gray-700 dark:bg-gray-800">
-          <h3 className="mb-4 text-sm font-semibold text-text-primary dark:text-white">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/5 dark:bg-[#1A1D2E]">
+          <h3 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
             Top Equipment Requirements
           </h3>
           <div className="space-y-3">
@@ -570,17 +593,17 @@ export default function DashboardPage() {
               const pct = (item.count / max) * 100;
               return (
                 <div key={item.name} className="flex items-center gap-3">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#FF6B00]/10 text-[10px] font-bold text-[#FF6B00]">
                     {i + 1}
                   </span>
                   <div className="flex-1">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-text-muted dark:text-gray-400">{item.name}</span>
-                      <span className="font-medium text-text-primary dark:text-white">{item.count}</span>
+                      <span className="text-gray-500 dark:text-gray-400">{item.name}</span>
+                      <span className="font-medium text-gray-900 dark:text-white">{item.count}</span>
                     </div>
-                    <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
+                    <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-gray-100 dark:bg-white/5">
                       <div
-                        className="h-full rounded-full bg-primary transition-all"
+                        className="h-full rounded-full bg-[#FF6B00] transition-all"
                         style={{ width: `${pct}%` }}
                       />
                     </div>
@@ -595,14 +618,14 @@ export default function DashboardPage() {
       {/* Recent Registrations & Quick Actions */}
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Recent Registrations */}
-        <div className="rounded-xl border border-border bg-surface p-5 dark:border-gray-700 dark:bg-gray-800 lg:col-span-2">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/5 dark:bg-[#1A1D2E] lg:col-span-2">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-text-primary dark:text-white">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
               Recent Registrations
             </h3>
             <button
               onClick={() => router.push("/persons")}
-              className="flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark"
+              className="flex items-center gap-1 text-xs font-medium text-[#FF6B00] hover:text-[#E55A00]"
             >
               View All <ArrowRight className="h-3 w-3" />
             </button>
@@ -610,41 +633,41 @@ export default function DashboardPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-border dark:border-gray-700">
-                  <th className="pb-2 font-medium text-text-muted dark:text-gray-400">Reg. No</th>
-                  <th className="pb-2 font-medium text-text-muted dark:text-gray-400">Name</th>
-                  <th className="hidden pb-2 font-medium text-text-muted dark:text-gray-400 sm:table-cell">District</th>
-                  <th className="hidden pb-2 font-medium text-text-muted dark:text-gray-400 sm:table-cell">Disability</th>
-                  <th className="pb-2 font-medium text-text-muted dark:text-gray-400">Date</th>
-                  <th className="pb-2 font-medium text-text-muted dark:text-gray-400">Status</th>
+                <tr className="border-b border-gray-100 dark:border-white/5">
+                  <th className="pb-2 font-medium text-gray-500 dark:text-gray-400">Reg. No</th>
+                  <th className="pb-2 font-medium text-gray-500 dark:text-gray-400">Name</th>
+                  <th className="hidden pb-2 font-medium text-gray-500 dark:text-gray-400 sm:table-cell">District</th>
+                  <th className="hidden pb-2 font-medium text-gray-500 dark:text-gray-400 sm:table-cell">Disability</th>
+                  <th className="pb-2 font-medium text-gray-500 dark:text-gray-400">Date</th>
+                  <th className="pb-2 font-medium text-gray-500 dark:text-gray-400">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border dark:divide-gray-700">
+              <tbody className="divide-y divide-gray-50 dark:divide-white/5">
                 {recentPersons.map((p) => (
                   <tr
                     key={p.id}
-                    className="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                    className="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-white/5"
                     onClick={() => router.push(`/persons/${p.id}`)}
                   >
-                    <td className="py-2.5 font-medium text-primary">{p.registrationNo}</td>
-                    <td className="py-2.5 text-text-primary dark:text-white">{p.fullName}</td>
-                    <td className="hidden py-2.5 text-text-muted dark:text-gray-400 sm:table-cell">
+                    <td className="py-2.5 font-medium text-[#FF6B00]">{p.registrationNo}</td>
+                    <td className="py-2.5 text-gray-900 dark:text-white">{p.fullName}</td>
+                    <td className="hidden py-2.5 text-gray-500 dark:text-gray-400 sm:table-cell">
                       {districtNames[p.districtId] || "—"}
                     </td>
-                    <td className="hidden py-2.5 text-text-muted dark:text-gray-400 sm:table-cell">
+                    <td className="hidden py-2.5 text-gray-500 dark:text-gray-400 sm:table-cell">
                       {p.disabilityType}
                     </td>
-                    <td className="py-2.5 text-text-muted dark:text-gray-400">
+                    <td className="py-2.5 text-gray-500 dark:text-gray-400">
                       {formatDate(p.registeredDate)}
                     </td>
                     <td className="py-2.5">
                       <span
                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
                           p.status === "active"
-                            ? "bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400"
+                            ? "bg-green-50 text-green-600 dark:bg-green-500/10 dark:text-green-400"
                             : p.status === "pending"
-                            ? "bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400"
-                            : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400"
+                            ? "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
+                            : "bg-gray-100 text-gray-600 dark:bg-white/5 dark:text-gray-400"
                         }`}
                       >
                         {p.status}
@@ -658,57 +681,57 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="rounded-xl border border-border bg-surface p-5 dark:border-gray-700 dark:bg-gray-800">
-          <h3 className="mb-4 text-sm font-semibold text-text-primary dark:text-white">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/5 dark:bg-[#1A1D2E]">
+          <h3 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
             Quick Actions
           </h3>
           <div className="space-y-2">
             <button
               onClick={() => router.push("/persons/create")}
-              className="flex w-full items-center gap-3 rounded-lg border border-border bg-background p-3 text-left text-sm transition-colors hover:border-primary hover:bg-primary/5 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-primary"
+              className="flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 p-3 text-left text-sm transition-colors hover:border-[#FF6B00] hover:bg-[#FF6B00]/5 dark:border-white/5 dark:bg-[#0F1117] dark:hover:border-[#FF6B00]"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                <UserPlus className="h-4 w-4 text-primary" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FF6B00]/10">
+                <UserPlus className="h-5 w-5 text-[#FF6B00]" />
               </div>
               <div>
-                <p className="font-medium text-text-primary dark:text-white">Register Person</p>
-                <p className="text-[10px] text-text-muted dark:text-gray-500">Add new PWD record</p>
+                <p className="font-medium text-gray-900 dark:text-white">Register Person</p>
+                <p className="text-[10px] text-gray-500 dark:text-gray-500">Add new PWD record</p>
               </div>
             </button>
             <button
               onClick={() => router.push("/reports")}
-              className="flex w-full items-center gap-3 rounded-lg border border-border bg-background p-3 text-left text-sm transition-colors hover:border-primary hover:bg-primary/5 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-primary"
+              className="flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 p-3 text-left text-sm transition-colors hover:border-[#FF6B00] hover:bg-[#FF6B00]/5 dark:border-white/5 dark:bg-[#0F1117] dark:hover:border-[#FF6B00]"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/30">
-                <Activity className="h-4 w-4 text-blue-600" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10">
+                <Activity className="h-5 w-5 text-blue-500" />
               </div>
               <div>
-                <p className="font-medium text-text-primary dark:text-white">View Reports</p>
-                <p className="text-[10px] text-text-muted dark:text-gray-500">Analytics & insights</p>
+                <p className="font-medium text-gray-900 dark:text-white">View Reports</p>
+                <p className="text-[10px] text-gray-500 dark:text-gray-500">Analytics & insights</p>
               </div>
             </button>
             <button
               onClick={() => router.push("/users")}
-              className="flex w-full items-center gap-3 rounded-lg border border-border bg-background p-3 text-left text-sm transition-colors hover:border-primary hover:bg-primary/5 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-primary"
+              className="flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 p-3 text-left text-sm transition-colors hover:border-[#FF6B00] hover:bg-[#FF6B00]/5 dark:border-white/5 dark:bg-[#0F1117] dark:hover:border-[#FF6B00]"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-50 dark:bg-violet-900/30">
-                <Users className="h-4 w-4 text-violet-600" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10">
+                <Users className="h-5 w-5 text-violet-500" />
               </div>
               <div>
-                <p className="font-medium text-text-primary dark:text-white">Manage Users</p>
-                <p className="text-[10px] text-text-muted dark:text-gray-500">User administration</p>
+                <p className="font-medium text-gray-900 dark:text-white">Manage Users</p>
+                <p className="text-[10px] text-gray-500 dark:text-gray-500">User administration</p>
               </div>
             </button>
             <button
               onClick={() => router.push("/territories")}
-              className="flex w-full items-center gap-3 rounded-lg border border-border bg-background p-3 text-left text-sm transition-colors hover:border-primary hover:bg-primary/5 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-primary"
+              className="flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 p-3 text-left text-sm transition-colors hover:border-[#FF6B00] hover:bg-[#FF6B00]/5 dark:border-white/5 dark:bg-[#0F1117] dark:hover:border-[#FF6B00]"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-900/30">
-                <MapPin className="h-4 w-4 text-amber-600" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10">
+                <MapPin className="h-5 w-5 text-amber-500" />
               </div>
               <div>
-                <p className="font-medium text-text-primary dark:text-white">Territories</p>
-                <p className="text-[10px] text-text-muted dark:text-gray-500">Location hierarchy</p>
+                <p className="font-medium text-gray-900 dark:text-white">Territories</p>
+                <p className="text-[10px] text-gray-500 dark:text-gray-500">Location hierarchy</p>
               </div>
             </button>
           </div>
@@ -717,36 +740,36 @@ export default function DashboardPage() {
 
       {/* Gender Split & Age Summary */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-border bg-surface p-4 dark:border-gray-700 dark:bg-gray-800">
+        <div className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-white/5 dark:bg-[#1A1D2E]">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/30">
-              <Users className="h-5 w-5 text-blue-600" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10">
+              <Users className="h-5 w-5 text-blue-500" />
             </div>
             <div>
-              <p className="text-lg font-bold text-text-primary dark:text-white">{stats?.maleCount || 0}</p>
-              <p className="text-xs text-text-muted dark:text-gray-400">Male Persons</p>
+              <p className="text-lg font-bold text-gray-900 dark:text-white">{stats?.maleCount || 0}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Male Persons</p>
             </div>
           </div>
         </div>
-        <div className="rounded-xl border border-border bg-surface p-4 dark:border-gray-700 dark:bg-gray-800">
+        <div className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-white/5 dark:bg-[#1A1D2E]">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-pink-50 dark:bg-pink-900/30">
-              <Heart className="h-5 w-5 text-pink-600" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-pink-500/10">
+              <Heart className="h-5 w-5 text-pink-500" />
             </div>
             <div>
-              <p className="text-lg font-bold text-text-primary dark:text-white">{stats?.femaleCount || 0}</p>
-              <p className="text-xs text-text-muted dark:text-gray-400">Female Persons</p>
+              <p className="text-lg font-bold text-gray-900 dark:text-white">{stats?.femaleCount || 0}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Female Persons</p>
             </div>
           </div>
         </div>
-        <div className="rounded-xl border border-border bg-surface p-4 dark:border-gray-700 dark:bg-gray-800">
+        <div className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-white/5 dark:bg-[#1A1D2E]">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-900/30">
-              <Clock className="h-5 w-5 text-amber-600" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10">
+              <Clock className="h-5 w-5 text-amber-500" />
             </div>
             <div>
-              <p className="text-lg font-bold text-text-primary dark:text-white">{stats?.childrenCount || 0}</p>
-              <p className="text-xs text-text-muted dark:text-gray-400">Children (&lt;18)</p>
+              <p className="text-lg font-bold text-gray-900 dark:text-white">{stats?.childrenCount || 0}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Children (&lt;18)</p>
             </div>
           </div>
         </div>

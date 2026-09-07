@@ -7,7 +7,8 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
-  Accessibility,
+  Heart,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/lib/auth";
@@ -25,7 +26,7 @@ function UserAvatar({ name, size = "md" }: { name: string; size?: "sm" | "md" })
   return (
     <div
       className={cn(
-        "flex shrink-0 items-center justify-center rounded-full bg-white/20 font-semibold text-white",
+        "flex shrink-0 items-center justify-center rounded-full bg-white/10 font-semibold text-white",
         size === "sm" ? "h-7 w-7 text-[10px]" : "h-8 w-8 text-xs"
       )}
     >
@@ -44,14 +45,17 @@ export function Sidebar() {
     setMobileSidebarOpen,
   } = useAppStore();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = () => {
     setShowLogoutModal(true);
   };
 
-  const confirmLogout = () => {
+  const confirmLogout = async () => {
+    setIsLoggingOut(true);
+    await useAuthStore.getState().logout();
     setShowLogoutModal(false);
-    useAuthStore.getState().logout();
+    setIsLoggingOut(false);
   };
 
   useEffect(() => {
@@ -68,21 +72,21 @@ export function Sidebar() {
       {/* Brand Header */}
       <div
         className={cn(
-          "flex h-16 shrink-0 items-center border-b border-white/10 px-3",
+          "flex h-16 shrink-0 items-center border-b border-white/5 px-4",
           !sidebarOpen && "justify-center px-0"
         )}
       >
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white/15">
-            <Accessibility className="h-3.5 w-3.5 text-white" />
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#FF6B00]">
+            <Heart className="h-4 w-4 text-white" />
           </div>
           {sidebarOpen && (
             <div className="min-w-0">
               <h1 className="text-base font-bold leading-tight text-white">
-                MIS
+                IntraFlow
               </h1>
-              <p className="truncate text-[11px] leading-tight text-white/50">
-                Disability Management
+              <p className="truncate text-[10px] leading-tight text-white/40">
+                PWD Management
               </p>
             </div>
           )}
@@ -90,15 +94,15 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-2 py-2 sidebar-scrollbar">
+      <nav className="flex-1 overflow-y-auto px-2 py-3 sidebar-scrollbar">
         {navigation.map((group) => (
-          <div key={group.title} className="mb-1">
+          <div key={group.title} className="mb-2">
             {group.title && sidebarOpen && (
-              <h2 className="mb-0.5 px-2 pt-2 pb-0.5 text-[10px] font-semibold uppercase tracking-widest text-white/35">
+              <h2 className="mb-1 px-3 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-white/30">
                 {group.title}
               </h2>
             )}
-            {group.title && !sidebarOpen && <div className="my-1.5 border-t border-white/10" />}
+            {group.title && !sidebarOpen && <div className="my-2 border-t border-white/5" />}
             <ul className="space-y-0.5">
               {group.items.map((item) => {
                 const Icon = item.icon;
@@ -109,19 +113,19 @@ export function Sidebar() {
                       href={item.href}
                       title={!sidebarOpen ? item.label : undefined}
                       className={cn(
-                        "group flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm font-medium transition-all",
+                        "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
                         active
-                          ? "bg-white/15 text-white"
-                          : "text-white/60 hover:bg-white/8 hover:text-white/90",
+                          ? "bg-[#FF6B00]/15 text-[#FF6B00]"
+                          : "text-white/50 hover:bg-white/5 hover:text-white/80",
                         !sidebarOpen && "justify-center px-0"
                       )}
                     >
                       <Icon
                         className={cn(
-                          "h-4 w-4 shrink-0 transition-colors",
+                          "h-4.5 w-4.5 shrink-0 transition-colors",
                           active
-                            ? "text-white"
-                            : "text-white/50 group-hover:text-white/80"
+                            ? "text-[#FF6B00]"
+                            : "text-white/40 group-hover:text-white/70"
                         )}
                       />
                       {sidebarOpen && <span>{item.label}</span>}
@@ -135,11 +139,11 @@ export function Sidebar() {
       </nav>
 
       {/* User Profile & Logout */}
-      <div className="shrink-0 border-t border-white/10 p-2">
+      <div className="shrink-0 border-t border-white/5 p-3">
         {user && (
           <div
             className={cn(
-              "flex items-center gap-2",
+              "flex items-center gap-2.5",
               !sidebarOpen && "justify-center"
             )}
           >
@@ -149,7 +153,7 @@ export function Sidebar() {
                 <p className="truncate text-sm font-medium text-white">
                   {user.name}
                 </p>
-                <p className="truncate text-xs text-white/45">
+                <p className="truncate text-[11px] text-white/35">
                   {role?.name || "User"}
                 </p>
               </div>
@@ -158,10 +162,10 @@ export function Sidebar() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="shrink-0 rounded p-1 text-white/40 transition-colors hover:bg-white/10 hover:text-white"
+                className="shrink-0 rounded-lg p-1.5 text-white/30 transition-colors hover:bg-white/5 hover:text-white/60"
                 aria-label="Logout"
               >
-                <LogOut className="h-3.5 w-3.5" />
+                <LogOut className="h-4 w-4" />
               </button>
             )}
           </div>
@@ -170,10 +174,10 @@ export function Sidebar() {
           <button
             type="button"
             onClick={handleLogout}
-            className="mt-1.5 flex w-full items-center justify-center rounded p-1 text-white/40 transition-colors hover:bg-white/10 hover:text-white"
+            className="mt-2 flex w-full items-center justify-center rounded-lg p-1.5 text-white/30 transition-colors hover:bg-white/5 hover:text-white/60"
             aria-label="Logout"
           >
-            <LogOut className="h-3.5 w-3.5" />
+            <LogOut className="h-4 w-4" />
           </button>
         )}
       </div>
@@ -185,7 +189,7 @@ export function Sidebar() {
       {/* Desktop Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-30 hidden bg-[#168B61] transition-all duration-300 lg:block dark:bg-[#0a1f15]",
+          "fixed inset-y-0 left-0 z-30 hidden bg-[#1A1D2E] transition-all duration-300 lg:block",
           sidebarOpen ? "w-[240px]" : "w-[60px]"
         )}
       >
@@ -194,7 +198,7 @@ export function Sidebar() {
         <button
           type="button"
           onClick={toggleSidebar}
-          className="absolute -right-3 top-20 z-40 flex h-6 w-6 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm transition-colors hover:bg-gray-50 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+          className="absolute -right-3 top-20 z-40 flex h-6 w-6 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm transition-colors hover:bg-gray-50 hover:text-gray-700 dark:border-gray-600 dark:bg-[#252836] dark:text-gray-400 dark:hover:bg-[#2D3142]"
           aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
         >
           {sidebarOpen ? (
@@ -208,7 +212,7 @@ export function Sidebar() {
       {/* Mobile Overlay */}
       {mobileSidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
           onClick={() => setMobileSidebarOpen(false)}
           aria-hidden="true"
         />
@@ -217,7 +221,7 @@ export function Sidebar() {
       {/* Mobile Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-[240px] bg-[#168B61] transition-transform duration-300 lg:hidden dark:bg-[#0a1f15]",
+          "fixed inset-y-0 left-0 z-50 w-[240px] bg-[#1A1D2E] transition-transform duration-300 lg:hidden",
           mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -226,31 +230,37 @@ export function Sidebar() {
 
       {/* Logout Confirmation Modal */}
       {showLogoutModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="mx-4 w-full max-w-sm rounded-xl border border-border bg-surface p-6 shadow-2xl dark:border-gray-700 dark:bg-gray-800">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mx-auto dark:bg-red-900/30">
-              <LogOut className="h-6 w-6 text-red-600 dark:text-red-400" />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-xs rounded-2xl border border-gray-700 bg-[#252836] p-5 shadow-2xl sm:max-w-sm sm:p-6">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500/10 mx-auto sm:h-12 sm:w-12">
+              <LogOut className="h-5 w-5 text-red-500 sm:h-6 sm:w-6" />
             </div>
-            <h3 className="mt-4 text-center text-lg font-semibold text-text-primary dark:text-white">
+            <h3 className="mt-3 text-center text-base font-semibold text-white sm:mt-4 sm:text-lg">
               Confirm Logout
             </h3>
-            <p className="mt-2 text-center text-sm text-text-muted dark:text-gray-400">
-              Are you sure you want to sign out of the system?
+            <p className="mt-1.5 text-center text-xs text-white/50 sm:mt-2 sm:text-sm">
+              Are you sure you want to sign out?
             </p>
-            <div className="mt-6 flex gap-3">
+            <div className="mt-4 flex gap-2.5 sm:mt-6 sm:gap-3">
               <button
                 type="button"
                 onClick={() => setShowLogoutModal(false)}
-                className="flex-1 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-medium text-text-primary transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                disabled={isLoggingOut}
+                className="flex-1 rounded-xl border border-gray-600 bg-transparent px-3 py-2 text-xs font-medium text-white/70 transition-colors hover:bg-white/5 disabled:opacity-50 sm:px-4 sm:py-2.5 sm:text-sm"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={confirmLogout}
-                className="flex-1 rounded-lg bg-[#168B61] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#0F684A]"
+                disabled={isLoggingOut}
+                className="flex-1 rounded-xl bg-[#FF6B00] px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-[#E55A00] disabled:opacity-50 sm:px-4 sm:py-2.5 sm:text-sm"
               >
-                Yes, Sign Out
+                {isLoggingOut ? (
+                  <Loader2 className="mx-auto h-4 w-4 animate-spin" />
+                ) : (
+                  "Yes, Sign Out"
+                )}
               </button>
             </div>
           </div>

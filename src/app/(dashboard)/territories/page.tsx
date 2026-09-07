@@ -412,13 +412,13 @@ export default function TerritoriesPage() {
     const isExpanded = expandedNodes.has(node.id);
     const hasChildren = node.children.length > 0;
     const levelIcons: Record<TerritoryLevel, React.ReactNode> = {
-      province: <MapPin className="h-4 w-4 text-green-600 dark:text-green-400" />,
+      province: <MapPin className="h-4 w-4 text-orange-600 dark:text-orange-400" />,
       district: <Building2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />,
       ds: <FolderOpen className="h-4 w-4 text-amber-600 dark:text-amber-400" />,
       gn: <FileText className="h-4 w-4 text-purple-600 dark:text-purple-400" />,
     };
     const levelBadgeColors: Record<TerritoryLevel, string> = {
-      province: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+      province: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
       district: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
       ds: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
       gn: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
@@ -486,7 +486,7 @@ export default function TerritoriesPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <div className="flex items-center gap-2">
-            <TreePine className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <TreePine className="h-5 w-5 text-orange-600 dark:text-orange-400" />
             <CardTitle className="text-lg">Territory Hierarchy</CardTitle>
           </div>
           <div className="flex gap-2">

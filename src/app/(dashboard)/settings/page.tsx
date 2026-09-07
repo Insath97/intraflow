@@ -125,12 +125,12 @@ export default function SettingsPage() {
                     onClick={() => setTheme("light")}
                     className={`group relative rounded-xl border-2 p-1 transition-all ${
                       theme === "light"
-                        ? "border-[#168B61] shadow-md"
+                        ? "border-[#FF6B00] shadow-md"
                         : "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
                     }`}
                   >
                     {theme === "light" && (
-                      <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-[#168B61]">
+                      <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-[#FF6B00]">
                         <Check className="h-3.5 w-3.5 text-white" />
                       </div>
                     )}
@@ -145,7 +145,7 @@ export default function SettingsPage() {
                         <div className="h-3 w-3/4 rounded bg-gray-200 dark:bg-gray-600" />
                         <div className="h-3 w-1/2 rounded bg-gray-200 dark:bg-gray-600" />
                         <div className="mt-2 flex gap-2">
-                          <div className="h-6 w-16 rounded bg-[#168B61]" />
+                          <div className="h-6 w-16 rounded bg-[#FF6B00]" />
                           <div className="h-6 w-16 rounded bg-gray-200 dark:bg-gray-600" />
                         </div>
                         <div className="mt-2 grid grid-cols-3 gap-1">
@@ -166,12 +166,12 @@ export default function SettingsPage() {
                     onClick={() => setTheme("dark")}
                     className={`group relative rounded-xl border-2 p-1 transition-all ${
                       theme === "dark"
-                        ? "border-[#168B61] shadow-md"
+                        ? "border-[#FF6B00] shadow-md"
                         : "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
                     }`}
                   >
                     {theme === "dark" && (
-                      <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-[#168B61]">
+                      <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-[#FF6B00]">
                         <Check className="h-3.5 w-3.5 text-white" />
                       </div>
                     )}
@@ -186,7 +186,7 @@ export default function SettingsPage() {
                         <div className="h-3 w-3/4 rounded bg-gray-700" />
                         <div className="h-3 w-1/2 rounded bg-gray-700" />
                         <div className="mt-2 flex gap-2">
-                          <div className="h-6 w-16 rounded bg-[#168B61]" />
+                          <div className="h-6 w-16 rounded bg-[#FF6B00]" />
                           <div className="h-6 w-16 rounded bg-gray-700" />
                         </div>
                         <div className="mt-2 grid grid-cols-3 gap-1">
@@ -212,7 +212,7 @@ export default function SettingsPage() {
                     }}
                     className={`group relative rounded-xl border-2 p-1 transition-all ${
                       false
-                        ? "border-[#168B61] shadow-md"
+                        ? "border-[#FF6B00] shadow-md"
                         : "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
                     }`}
                   >
@@ -227,7 +227,7 @@ export default function SettingsPage() {
                         <div className="h-3 w-3/4 rounded bg-gray-300 dark:bg-gray-600" />
                         <div className="h-3 w-1/2 rounded bg-gray-300 dark:bg-gray-600" />
                         <div className="mt-2 flex gap-2">
-                          <div className="h-6 w-16 rounded bg-[#168B61]" />
+                          <div className="h-6 w-16 rounded bg-[#FF6B00]" />
                           <div className="h-6 w-16 rounded bg-gray-300 dark:bg-gray-600" />
                         </div>
                         <div className="mt-2 grid grid-cols-3 gap-1">
@@ -258,7 +258,7 @@ export default function SettingsPage() {
                 <div className="flex flex-col gap-8 sm:flex-row">
                   {/* Avatar */}
                   <div className="flex flex-col items-center gap-3">
-                    <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#EAF7F1] text-3xl font-bold text-[#168B61] dark:bg-[#0F684A]/20 dark:text-[#4ADE80]">
+                    <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#FFF3EB] text-3xl font-bold text-[#FF6B00] dark:bg-[#E55A00]/20 dark:text-[#FF9A5C]">
                       {getUserInitials()}
                     </div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -328,7 +328,7 @@ export default function SettingsPage() {
                         {profileSaved ? "Saved!" : "Save Changes"}
                       </Button>
                       {profileSaved && (
-                        <span className="text-sm text-[#168B61]">
+                        <span className="text-sm text-[#FF6B00]">
                           Profile updated successfully
                         </span>
                       )}
@@ -432,7 +432,7 @@ export default function SettingsPage() {
                     {systemSaved ? "Saved!" : "Save Configuration"}
                   </Button>
                   {systemSaved && (
-                    <span className="text-sm text-[#168B61]">
+                    <span className="text-sm text-[#FF6B00]">
                       Configuration saved successfully
                     </span>
                   )}

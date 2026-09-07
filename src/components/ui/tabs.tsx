@@ -46,7 +46,7 @@ const TabList = React.forwardRef<
     ref={ref}
     role="tablist"
     className={cn(
-      "inline-flex h-10 items-center justify-center rounded-lg bg-gray-100 p-1 text-gray-500 dark:bg-gray-800 dark:text-gray-400",
+      "inline-flex h-10 items-center justify-center rounded-lg bg-gray-100 p-1 text-gray-500 dark:bg-white/5 dark:text-gray-400",
       className
     )}
     {...props}
@@ -72,10 +72,10 @@ const Tab = React.forwardRef<HTMLButtonElement, TabProps>(
         onClick={() => onValueChange(tabValue)}
         className={cn(
           "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-all",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#168B61] focus-visible:ring-offset-2",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00] focus-visible:ring-offset-2",
           isActive
-            ? "bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-gray-100"
-            : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100",
+            ? "bg-white text-gray-900 shadow-sm dark:bg-[#1A1D2E] dark:text-white"
+            : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white",
           className
         )}
         {...props}
@@ -100,7 +100,7 @@ const TabPanel = React.forwardRef<HTMLDivElement, TabPanelProps>(
         role="tabpanel"
         tabIndex={0}
         className={cn(
-          "mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#168B61] focus-visible:ring-offset-2",
+          "mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00] focus-visible:ring-offset-2",
           className
         )}
         {...props}

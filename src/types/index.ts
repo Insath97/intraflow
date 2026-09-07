@@ -26,6 +26,22 @@ export interface Role {
   updatedAt: string;
 }
 
+export interface RoleItem {
+  id: string;
+  name: string;
+  description: string | null;
+  is_protected: boolean;
+  is_active: boolean;
+  permissions: Array<{
+    id: string;
+    group_name: string;
+    permission_name: string;
+    display_name: string;
+  }>;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Permission {
   id: string;
   name: string;

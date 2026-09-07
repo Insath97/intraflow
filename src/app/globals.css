@@ -3,16 +3,16 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --color-primary: #168B61;
-  --color-primary-dark: #0F684A;
-  --color-primary-light: #EAF7F1;
+  --color-primary: #FF6B00;
+  --color-primary-dark: #E55A00;
+  --color-primary-light: #FFF3EB;
 }
 
 @theme {
-  --color-primary: #168B61;
-  --color-primary-dark: #0F684A;
-  --color-primary-light: #EAF7F1;
-  --color-background: #F7FAF9;
+  --color-primary: #FF6B00;
+  --color-primary-dark: #E55A00;
+  --color-primary-light: #FFF3EB;
+  --color-background: #F5F5F5;
   --color-surface: #FFFFFF;
   --color-text-primary: #1F2937;
   --color-text-muted: #6B7280;
@@ -29,14 +29,14 @@ body {
 }
 
 .dark body {
-  background-color: #111827;
+  background-color: #0F1117;
   color: #F9FAFB;
 }
 
-/* Sidebar scrollbar - green theme */
+/* Sidebar scrollbar - orange theme */
 .sidebar-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #168B61 transparent;
+  scrollbar-color: #FF6B00 transparent;
 }
 .sidebar-scrollbar::-webkit-scrollbar {
   width: 5px;
@@ -46,9 +46,9 @@ body {
   border-radius: 10px;
 }
 .sidebar-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #168B61;
+  background-color: #FF6B00;
   border-radius: 10px;
 }
 .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #0F684A;
+  background-color: #E55A00;
 }

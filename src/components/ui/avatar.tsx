@@ -39,7 +39,7 @@ function Avatar({
   return (
     <div
       className={cn(
-        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#EAF7F1] text-[#168B61] font-semibold dark:bg-[#0F684A]/20 dark:text-[#4ADE80]",
+        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#FF6B00]/10 text-[#FF6B00] font-semibold dark:bg-[#FF6B00]/20 dark:text-[#FF8C38]",
         sizeClasses[size],
         className
       )}
