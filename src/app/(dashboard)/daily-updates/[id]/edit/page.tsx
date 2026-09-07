@@ -13,10 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LoadingState } from "@/components/common/loading-state";
 import { cn } from "@/lib/utils";
-import {
-  ArrowLeft, Loader2, Calendar, FileText, Briefcase,
-  Trash2, Clock, Search, ChevronDown, X, Check, AlertCircle,
-} from "lucide-react";
+import { ArrowLeft, Loader2, Plus, Briefcase, Trash2, Search, ChevronDown, X, Check, Clock, AlertCircle } from "lucide-react";
 
 function useIsDark() {
   const [isDark, setIsDark] = useState(false);
@@ -104,6 +101,8 @@ interface WorkEntryRow {
 
 const emptyEntry: WorkEntryRow = { project_id: "", task_id: "", work_type: "REGULAR", location: "OFFICE", start_time: "09:00", end_time: "17:00", description: "" };
 
+const selectCls = "flex h-10 w-full appearance-none rounded-lg border bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00] dark:border-white/10 dark:bg-[#1A1D2E] dark:text-gray-100";
+
 export default function EditDailyUpdatePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
@@ -118,7 +117,7 @@ export default function EditDailyUpdatePage({ params }: { params: Promise<{ id: 
   const [loadingTasks, setLoadingTasks] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState(false);
 
-  const [form, setForm] = useState({ summary: "", blockers: "", tomorrow_plan: "" });
+  const [form, setForm] = useState({ blockers: "", tomorrow_plan: "" });
   const [workEntries, setWorkEntries] = useState<WorkEntryRow[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -129,7 +128,7 @@ export default function EditDailyUpdatePage({ params }: { params: Promise<{ id: 
         if (duRes.data.status === "success") {
           const d = duRes.data.data;
           setItem(d);
-          setForm({ summary: d.summary || "", blockers: d.blockers || "", tomorrow_plan: d.tomorrow_plan || "" });
+          setForm({ blockers: d.blockers || "", tomorrow_plan: d.tomorrow_plan || "" });
           setWorkEntries(d.work_entries.length > 0 ? d.work_entries.map((we) => ({
             project_id: we.project_id, task_id: we.task_id || "",
             work_type: we.work_type as WorkType, location: we.location as WorkLocation,
@@ -183,7 +182,7 @@ export default function EditDailyUpdatePage({ params }: { params: Promise<{ id: 
       }));
       const res = await dailyUpdateService.update(id, {
         update_date: item!.update_date,
-        summary: form.summary || undefined, blockers: form.blockers || undefined,
+        blockers: form.blockers || undefined,
         tomorrow_plan: form.tomorrow_plan || undefined,
         work_entries: entries.length > 0 ? entries : undefined,
       });
@@ -193,89 +192,131 @@ export default function EditDailyUpdatePage({ params }: { params: Promise<{ id: 
     finally { setSaving(false); }
   }
 
-  const sh = "border-b border-gray-100 bg-gray-50/50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50";
-
   if (loadingPage) return <div className="space-y-6"><PageHeader title="Edit Update" breadcrumbs={[{ label: "Daily Updates", onClick: () => router.push("/daily-updates") }]} /><LoadingState message="Loading..." /></div>;
   if (error || !item) return <div className="space-y-6"><PageHeader title="Edit Update" breadcrumbs={[{ label: "Daily Updates", onClick: () => router.push("/daily-updates") }]} /><Card className="p-12 text-center"><AlertCircle className="mx-auto h-8 w-8 text-red-500" /><p className="mt-4 text-sm text-red-600">{error || "Not found"}</p><Button variant="outline" size="sm" onClick={() => router.push("/daily-updates")} className="mt-4"><ArrowLeft className="mr-2 h-4 w-4" />Back</Button></Card></div>;
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Edit Daily Update" breadcrumbs={[{ label: "Daily Updates", onClick: () => router.push("/daily-updates") }, { label: new Date(item.update_date).toLocaleDateString() }]}
-        actions={<Button variant="outline" size="sm" onClick={() => router.push("/daily-updates")}><ArrowLeft className="mr-2 h-4 w-4" />Back</Button>} />
+    <div className="flex flex-col h-[calc(100vh-4rem)]">
+      <div className="shrink-0">
+        <PageHeader title="Edit Daily Update" breadcrumbs={[{ label: "Daily Updates", onClick: () => router.push("/daily-updates") }, { label: new Date(item.update_date).toLocaleDateString() }]}
+          actions={<Button variant="outline" size="sm" onClick={() => router.push("/daily-updates")}><ArrowLeft className="mr-2 h-4 w-4" />Back</Button>} />
+      </div>
 
-      <div className="grid gap-6 xl:grid-cols-3">
-        <div className="xl:col-span-2 space-y-6">
-          <Card className="overflow-hidden">
-            <div className={sh}><div className="flex items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#FFF3EB] text-[#FF6B00]"><FileText className="h-4.5 w-4.5" /></div><div><h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Update Details</h3></div></div></div>
-            <CardContent className="p-6 space-y-5">
-              <div><label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Date</label>
-                <div className="flex h-10 items-center rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm text-gray-500 dark:border-white/10 dark:bg-white/5 dark:text-gray-400"><Calendar className="mr-2 h-4 w-4" />{new Date(item.update_date).toLocaleDateString()}</div></div>
-              <div><label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Summary</label>
-                <textarea placeholder="What did you work on?" value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} rows={3} className="flex w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00] dark:border-white/10 dark:bg-[#1A1D2E] dark:text-gray-100" /></div>
-              <div><label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Blockers</label>
-                <textarea placeholder="Any blockers?" value={form.blockers} onChange={(e) => setForm({ ...form, blockers: e.target.value })} rows={2} className="flex w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00] dark:border-white/10 dark:bg-[#1A1D2E] dark:text-gray-100" /></div>
-              <div><label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Tomorrow&apos;s Plan</label>
-                <textarea placeholder="Plan for tomorrow?" value={form.tomorrow_plan} onChange={(e) => setForm({ ...form, tomorrow_plan: e.target.value })} rows={2} className="flex w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00] dark:border-white/10 dark:bg-[#1A1D2E] dark:text-gray-100" /></div>
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-5xl mx-auto p-6 space-y-6 pb-24">
+          {/* Top bar: date (read-only) + blockers + plan */}
+          <Card>
+            <CardContent className="p-5">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Date</label>
+                  <div className="flex h-10 items-center rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm text-gray-500 dark:border-white/10 dark:bg-white/5 dark:text-gray-400"><Clock className="mr-2 h-4 w-4" />{new Date(item.update_date).toLocaleDateString()}</div>
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Blockers</label>
+                  <Input placeholder="Any blockers?" value={form.blockers} onChange={(e) => setForm({ ...form, blockers: e.target.value })} />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Tomorrow&apos;s Plan</label>
+                  <Input placeholder="Plan for tomorrow?" value={form.tomorrow_plan} onChange={(e) => setForm({ ...form, tomorrow_plan: e.target.value })} />
+                </div>
+              </div>
             </CardContent>
           </Card>
 
-          <Card className="overflow-hidden">
-            <div className={sh}><div className="flex items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100 text-blue-600"><Briefcase className="h-4.5 w-4.5" /></div><div><h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Work Entries</h3><p className="text-xs text-gray-500 dark:text-gray-400">{workEntries.length} entries</p></div></div></div>
-            <CardContent className="p-6 space-y-4">
-              {workEntries.map((entry, idx) => {
-                const duration = calcDuration(entry.start_time, entry.end_time);
-                const entryTasks = entry.project_id ? (tasksByProject[entry.project_id] || []) : [];
-                return (
-                  <div key={idx} className="rounded-lg border border-gray-200 p-4 dark:border-white/10 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-gray-500">Entry {idx + 1}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-[#FF6B00]">{duration}h</span>
-                        {workEntries.length > 1 && <button type="button" onClick={() => removeEntry(idx)} className="text-gray-400 hover:text-red-500"><Trash2 className="h-3.5 w-3.5" /></button>}
+          {/* Work entries */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                <Briefcase className="h-4 w-4 text-gray-400" />
+                Work Entries
+                <span className="text-xs font-normal text-gray-400">({workEntries.length})</span>
+              </h3>
+            </div>
+
+            {workEntries.map((entry, idx) => {
+              const duration = calcDuration(entry.start_time, entry.end_time);
+              const entryTasks = entry.project_id ? (tasksByProject[entry.project_id] || []) : [];
+              return (
+                <Card key={idx} className="overflow-hidden">
+                  <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/50 px-5 py-3 dark:border-gray-800 dark:bg-gray-800/50">
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[#FFF3EB] text-xs font-bold text-[#FF6B00] dark:bg-[#FF6B00]/10 dark:text-[#FF9A5C]">{idx + 1}</span>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Entry {idx + 1}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="flex items-center gap-1 text-sm font-semibold text-[#FF6B00]"><Clock className="h-3.5 w-3.5" />{duration}h</span>
+                      {workEntries.length > 1 && (
+                        <button type="button" onClick={() => removeEntry(idx)} className="rounded-md p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10"><Trash2 className="h-4 w-4" /></button>
+                      )}
+                    </div>
+                  </div>
+                  <CardContent className="p-5 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium text-gray-500 dark:text-gray-400">Project <span className="text-red-500">*</span></label>
+                        <Combo value={entry.project_id} onChange={(v) => { updateEntry(idx, "project_id", v); if (v) loadTasks(v); }} items={projects} placeholder="Select project" loading={loadingProjects} />
+                        {errors[`entry_${idx}_project`] && <p className="mt-1 text-xs text-red-500">{errors[`entry_${idx}_project`]}</p>}
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium text-gray-500 dark:text-gray-400">Task</label>
+                        <Combo value={entry.task_id} onChange={(v) => updateEntry(idx, "task_id", v)} items={entryTasks} placeholder="Select task" loading={loadingTasks[entry.project_id]} />
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div><label className="mb-1 block text-xs font-medium text-gray-500">Project <span className="text-red-500">*</span></label>
-                        <Combo value={entry.project_id} onChange={(v) => { updateEntry(idx, "project_id", v); if (v) loadTasks(v); }} items={projects} placeholder="Select project" loading={loadingProjects} />
-                        {errors[`entry_${idx}_project`] && <p className="mt-1 text-xs text-red-500">{errors[`entry_${idx}_project`]}</p>}</div>
-                      <div><label className="mb-1 block text-xs font-medium text-gray-500">Task</label>
-                        <Combo value={entry.task_id} onChange={(v) => updateEntry(idx, "task_id", v)} items={entryTasks} placeholder="Select task" loading={loadingTasks[entry.project_id]} /></div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium text-gray-500 dark:text-gray-400">Type</label>
+                        <select value={entry.work_type} onChange={(e) => updateEntry(idx, "work_type", e.target.value)} className={selectCls}>
+                          {WORK_TYPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium text-gray-500 dark:text-gray-400">Location</label>
+                        <select value={entry.location} onChange={(e) => updateEntry(idx, "location", e.target.value)} className={selectCls}>
+                          {WORK_LOCATION_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium text-gray-500 dark:text-gray-400">Start <span className="text-red-500">*</span></label>
+                        <Input type="time" value={entry.start_time} onChange={(e) => updateEntry(idx, "start_time", e.target.value)} error={!!errors[`entry_${idx}_start`]} />
+                        {errors[`entry_${idx}_start`] && <p className="mt-1 text-xs text-red-500">{errors[`entry_${idx}_start`]}</p>}
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium text-gray-500 dark:text-gray-400">End <span className="text-red-500">*</span></label>
+                        <Input type="time" value={entry.end_time} onChange={(e) => updateEntry(idx, "end_time", e.target.value)} error={!!errors[`entry_${idx}_end`]} />
+                        {errors[`entry_${idx}_end`] && <p className="mt-1 text-xs text-red-500">{errors[`entry_${idx}_end`]}</p>}
+                      </div>
                     </div>
-                    <div className="grid grid-cols-4 gap-3">
-                      <div><label className="mb-1 block text-xs font-medium text-gray-500">Type</label>
-                        <select value={entry.work_type} onChange={(e) => updateEntry(idx, "work_type", e.target.value)} className="flex h-10 w-full appearance-none rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm dark:border-white/10 dark:bg-[#1A1D2E] dark:text-gray-100">
-                          {WORK_TYPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}</select></div>
-                      <div><label className="mb-1 block text-xs font-medium text-gray-500">Location</label>
-                        <select value={entry.location} onChange={(e) => updateEntry(idx, "location", e.target.value)} className="flex h-10 w-full appearance-none rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm dark:border-white/10 dark:bg-[#1A1D2E] dark:text-gray-100">
-                          {WORK_LOCATION_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}</select></div>
-                      <div><label className="mb-1 block text-xs font-medium text-gray-500">Start</label>
-                        <Input type="time" value={entry.start_time} onChange={(e) => updateEntry(idx, "start_time", e.target.value)} /></div>
-                      <div><label className="mb-1 block text-xs font-medium text-gray-500">End</label>
-                        <Input type="time" value={entry.end_time} onChange={(e) => updateEntry(idx, "end_time", e.target.value)} /></div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-gray-500 dark:text-gray-400">Description</label>
+                      <Input placeholder="What did you do?" value={entry.description} onChange={(e) => updateEntry(idx, "description", e.target.value)} />
                     </div>
-                    <div><label className="mb-1 block text-xs font-medium text-gray-500">Description</label>
-                      <Input placeholder="What did you do?" value={entry.description} onChange={(e) => updateEntry(idx, "description", e.target.value)} /></div>
-                  </div>
-                );
-              })}
-              <Button type="button" variant="outline" onClick={addEntry} className="w-full gap-1"><Clock className="h-4 w-4" /> Add Entry</Button>
-            </CardContent>
-          </Card>
-        </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
 
-        <div className="xl:col-span-1 space-y-6">
-          <Card className="overflow-hidden">
-            <div className={sh}><div className="flex items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100 text-amber-600"><Clock className="h-4.5 w-4.5" /></div><div><h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Summary</h3></div></div></div>
-            <CardContent className="p-6 space-y-3 text-sm">
-              <div className="flex justify-between"><span className="text-gray-500">Date</span><span className="font-medium text-gray-900 dark:text-gray-100">{new Date(item.update_date).toLocaleDateString()}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Entries</span><span className="font-medium text-gray-900 dark:text-gray-100">{workEntries.length}</span></div>
-              <div className="border-t border-gray-100 dark:border-white/5 pt-3 flex justify-between"><span className="text-gray-500">Total Hours</span><span className="text-lg font-bold text-[#FF6B00]">{totalHours.toFixed(2)}h</span></div>
-            </CardContent>
-          </Card>
-          <Button onClick={handleSave} disabled={saving} className="w-full" size="lg">
-            {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Calendar className="mr-2 h-4 w-4" />}
-            {saving ? "Saving..." : "Update"}
-          </Button>
+            <button type="button" onClick={addEntry} className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-200 py-3 text-sm font-medium text-gray-500 transition-colors hover:border-[#FF6B00] hover:text-[#FF6B00] dark:border-white/10 dark:hover:border-[#FF6B00] dark:hover:text-[#FF9A5C]">
+              <Plus className="h-4 w-4" /> Add Entry
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Sticky bottom bar */}
+      <div className="shrink-0 border-t border-gray-200 bg-white/80 backdrop-blur-sm dark:border-white/10 dark:bg-[#0F1117]/80">
+        <div className="max-w-5xl mx-auto flex items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-4 text-sm">
+            <span className="text-gray-500 dark:text-gray-400">{workEntries.length} {workEntries.length === 1 ? "entry" : "entries"}</span>
+            <span className="font-semibold text-[#FF6B00]">{totalHours.toFixed(1)}h total</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" onClick={() => router.push("/daily-updates")} disabled={saving}>Cancel</Button>
+            <Button onClick={handleSave} disabled={saving} className="min-w-[140px]">
+              {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {saving ? "Saving..." : "Update"}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
