@@ -113,7 +113,7 @@ export default function CreateDailyUpdatePage() {
   const [saving, setSaving] = useState(false);
 
   const today = new Date().toISOString().split("T")[0];
-  const [form, setForm] = useState({ update_date: today, summary: "", blockers: "", tomorrow_plan: "" });
+  const [form, setForm] = useState({ update_date: today, summary: "", blockers: "", yesterday_summary: "" });
   const [workEntries, setWorkEntries] = useState<WorkEntryRow[]>([{ ...emptyEntry }]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -166,7 +166,7 @@ export default function CreateDailyUpdatePage() {
         update_date: form.update_date,
         summary: form.summary || undefined,
         blockers: form.blockers || undefined,
-        tomorrow_plan: form.tomorrow_plan || undefined,
+        yesterday_summary: form.yesterday_summary || undefined,
         work_entries: entries.length > 0 ? entries : undefined,
       });
       if (res.data.status === "success") { toast(res.data.message || "Daily update created", "success"); setTimeout(() => router.push("/daily-updates"), 500); }
@@ -196,15 +196,13 @@ export default function CreateDailyUpdatePage() {
                 <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Summary</label>
                 <textarea placeholder="What did you work on today?" value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} rows={3} className="flex w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00] dark:border-white/10 dark:bg-[#1A1D2E] dark:text-gray-100" />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Blockers</label>
-                  <textarea placeholder="Any blockers or impediments?" value={form.blockers} onChange={(e) => setForm({ ...form, blockers: e.target.value })} rows={2} className="flex w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00] dark:border-white/10 dark:bg-[#1A1D2E] dark:text-gray-100" />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Tomorrow&apos;s Plan</label>
-                  <textarea placeholder="What&apos;s planned for tomorrow?" value={form.tomorrow_plan} onChange={(e) => setForm({ ...form, tomorrow_plan: e.target.value })} rows={2} className="flex w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00] dark:border-white/10 dark:bg-[#1A1D2E] dark:text-gray-100" />
-                </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">What I Did Yesterday</label>
+                <textarea placeholder="What did you do yesterday?" value={form.yesterday_summary} onChange={(e) => setForm({ ...form, yesterday_summary: e.target.value })} rows={2} className="flex w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00] dark:border-white/10 dark:bg-[#1A1D2E] dark:text-gray-100" />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Blockers</label>
+                <textarea placeholder="Any blockers or impediments?" value={form.blockers} onChange={(e) => setForm({ ...form, blockers: e.target.value })} rows={2} className="flex w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00] dark:border-white/10 dark:bg-[#1A1D2E] dark:text-gray-100" />
               </div>
             </CardContent>
           </Card>

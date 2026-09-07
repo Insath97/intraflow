@@ -246,11 +246,11 @@ export default function DailyUpdatesPage() {
                           </div>
                         ))}
                       </div>
-                      {(item.summary || item.blockers || item.tomorrow_plan) && (
+                      {(item.summary || item.blockers || item.yesterday_summary) && (
                         <div className="mt-3 grid grid-cols-3 gap-3 text-xs">
                           {item.summary && <div><span className="font-medium text-gray-500">Summary:</span> <span className="text-gray-700 dark:text-gray-300">{item.summary}</span></div>}
                           {item.blockers && <div><span className="font-medium text-gray-500">Blockers:</span> <span className="text-gray-700 dark:text-gray-300">{item.blockers}</span></div>}
-                          {item.tomorrow_plan && <div><span className="font-medium text-gray-500">Tomorrow:</span> <span className="text-gray-700 dark:text-gray-300">{item.tomorrow_plan}</span></div>}
+                          {item.yesterday_summary && <div><span className="font-medium text-gray-500">Yesterday:</span> <span className="text-gray-700 dark:text-gray-300">{item.yesterday_summary}</span></div>}
                         </div>
                       )}
                     </div>

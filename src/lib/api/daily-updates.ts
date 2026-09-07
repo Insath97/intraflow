@@ -18,14 +18,14 @@ export interface DailyUpdateCreate {
   update_date: string;
   summary?: string;
   blockers?: string;
-  tomorrow_plan?: string;
+  yesterday_summary?: string;
   work_entries?: WorkEntryInput[];
 }
 
 export interface DailyUpdateUpdate {
   summary?: string;
   blockers?: string;
-  tomorrow_plan?: string;
+  yesterday_summary?: string;
   work_entries?: WorkEntryInput[];
 }
 
@@ -52,7 +52,7 @@ export interface DailyUpdateItem {
   update_date: string;
   summary: string | null;
   blockers: string | null;
-  tomorrow_plan: string | null;
+  yesterday_summary: string | null;
   submitted_at: string;
   work_entries: WorkEntryResponse[];
   total_hours: number;
