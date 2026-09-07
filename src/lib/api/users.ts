@@ -43,6 +43,16 @@ export interface UserItem {
   updated_at: string;
 }
 
+export interface UserSimple {
+  id: string;
+  f_name: string;
+  l_name: string;
+  full_name: string;
+  username: string;
+  employee_code: string;
+  designation: string | null;
+}
+
 export interface UserListParams {
   search?: string;
   role_id?: string;
@@ -74,8 +84,12 @@ export const usersApi = {
   getById: (id: string) =>
     api.get<ApiResponse<UserItem>>(`/users/${id}`),
 
-  simple: () =>
-    api.get<ApiResponse<UserItem[]>>("/users/simple"),
+  simple: (isActive?: boolean) => {
+    const q = new URLSearchParams();
+    if (isActive !== undefined) q.set("is_active", String(isActive));
+    const qs = q.toString();
+    return api.get<ApiResponse<UserSimple[]>>(`/users/simple${qs ? `?${qs}` : ""}`);
+  },
 
   create: (data: FormData) =>
     api.post<ApiResponse<UserItem>>("/users", data, {

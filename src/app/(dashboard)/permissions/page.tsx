@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/common/page-header";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,6 +60,7 @@ export default function PermissionsPage() {
   const [error, setError] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<Filters>(defaultFilters);
+  const [stats, setStats] = useState<{ total: number; active: number; inactive: number; groups: number } | null>(null);
 
   const fetchPermissions = useCallback(async () => {
     setIsLoading(true);
@@ -87,6 +88,23 @@ export default function PermissionsPage() {
   useEffect(() => {
     fetchPermissions();
   }, [fetchPermissions]);
+
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const res = await permissionService.stats();
+        if (res.data.status === "success") {
+          setStats({
+            total: res.data.data.total,
+            active: res.data.data.active,
+            inactive: res.data.data.inactive,
+            groups: res.data.data.groups.length,
+          });
+        }
+      } catch { /* non-critical */ }
+    }
+    loadStats();
+  }, []);
 
   const groupedPermissions = useMemo<GroupedPermissions[]>(() => {
     let filtered = [...permissions];
@@ -223,6 +241,56 @@ export default function PermissionsPage() {
           </div>
         }
       />
+
+      {/* Stats Cards */}
+      {stats && (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <Card>
+            <CardContent className="flex items-center gap-3 p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
+                <Lock className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.total}</p>
+                <p className="text-xs text-gray-500">Total Permissions</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="flex items-center gap-3 p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30">
+                <ShieldCheck className="h-5 w-5 text-green-600 dark:text-green-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.active}</p>
+                <p className="text-xs text-gray-500">Active</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="flex items-center gap-3 p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900/30">
+                <Shield className="h-5 w-5 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.inactive}</p>
+                <p className="text-xs text-gray-500">Inactive</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="flex items-center gap-3 p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                <Key className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.groups}</p>
+                <p className="text-xs text-gray-500">Groups</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Search + Filters */}
       <Card className="p-4">

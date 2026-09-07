@@ -106,15 +106,14 @@ export default function UsersPage() {
     fetchUsers();
   }, [fetchUsers]);
 
-  useEffect(() => {
-    async function loadStats() {
-      try {
-        const res = await userService.stats();
-        if (res.data.status === "success") setStats(res.data.data);
-      } catch { /* non-critical */ }
-    }
-    loadStats();
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await userService.stats();
+      if (res.data.status === "success") setStats(res.data.data);
+    } catch { /* non-critical */ }
   }, []);
+
+  useEffect(() => { fetchStats(); }, [fetchStats]);
 
   const activeFilters = [statusFilter, roleFilter].filter(Boolean).length;
 
@@ -137,6 +136,7 @@ export default function UsersPage() {
       if (res.data.status === "success") {
         toast(res.data.message || "User deleted successfully", "success");
         fetchUsers();
+        fetchStats();
       } else {
         toast(res.data.message || "Failed to delete user", "error");
       }
@@ -167,6 +167,7 @@ export default function UsersPage() {
           "success"
         );
         fetchUsers();
+        fetchStats();
       } else {
         toast(res.data.message || "Failed to toggle status", "error");
       }
@@ -197,6 +198,7 @@ export default function UsersPage() {
           "success"
         );
         fetchUsers();
+        fetchStats();
       } else {
         toast(res.data.message || "Failed to toggle login", "error");
       }

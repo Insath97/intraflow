@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import type { User, Role } from "@/types";
-import { setAccessToken } from "@/lib/api";
+import { setAccessToken } from "@/lib/api/axios-client";
 import { authService, type LoginResponse } from "@/services/auth.service";
 
 interface AuthState {

@@ -10,4 +10,8 @@ export type { DepartmentItem, DepartmentSimple, DepartmentStats, DepartmentListR
 export { territoriesApi } from "./territories";
 export { auditLogsApi, MODULES, ACTIONS } from "./audit-logs";
 export { reportsApi } from "./reports";
+export { projectService } from "./projects";
+export type { ProjectItem, ProjectStats, ProjectListResponse, ProjectListParams, ProjectStatus, ProjectType, ProjectPriority, ProjectMember } from "./projects";
+export { moduleService } from "./modules";
+export type { ModuleItem, ModuleListParams, ModuleCreateData, ModuleUpdateData } from "./modules";
 export type { ApiResponse, PaginatedResponse } from "./users";

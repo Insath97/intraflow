@@ -100,15 +100,14 @@ export default function DepartmentsPage() {
 
   useEffect(() => { fetchDepartments(); }, [fetchDepartments]);
 
-  useEffect(() => {
-    async function loadStats() {
-      try {
-        const res = await departmentService.stats();
-        if (res.data.status === "success") setStats(res.data.data);
-      } catch { /* non-critical */ }
-    }
-    loadStats();
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await departmentService.stats();
+      if (res.data.status === "success") setStats(res.data.data);
+    } catch { /* non-critical */ }
   }, []);
+
+  useEffect(() => { fetchStats(); }, [fetchStats]);
 
   function openCreate() {
     setEditingDept(null);
@@ -147,6 +146,7 @@ export default function DepartmentsPage() {
         if (res.data.status === "success") {
           toast(res.data.message || "Department updated successfully", "success");
           fetchDepartments();
+          fetchStats();
           setModalOpen(false);
         } else {
           toast(res.data.message || "Failed to update department", "error");
@@ -160,6 +160,7 @@ export default function DepartmentsPage() {
         if (res.data.status === "success") {
           toast(res.data.message || "Department created successfully", "success");
           fetchDepartments();
+          fetchStats();
           setModalOpen(false);
         } else {
           toast(res.data.message || "Failed to create department", "error");
@@ -187,6 +188,7 @@ export default function DepartmentsPage() {
       if (res.data.status === "success") {
         toast(res.data.message || "Department deleted successfully", "success");
         fetchDepartments();
+        fetchStats();
       } else {
         toast(res.data.message || "Failed to delete department", "error");
       }

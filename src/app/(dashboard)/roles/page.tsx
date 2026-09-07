@@ -1,248 +1,135 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import type { Role } from "@/types";
-import { RoleService, UserService } from "@/services";
-import { PERMISSION_GROUPS } from "@/lib/constants";
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { roleService } from "@/services";
+import type { RoleItem } from "@/services/role.service";
 import { useToast } from "@/components/ui/toast";
 import { PageHeader } from "@/components/common/page-header";
 import { StatusBadge } from "@/components/common/status-badge";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { EmptyState } from "@/components/common/empty-state";
+import { LoadingState } from "@/components/common/loading-state";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
-import { Dialog } from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { FormField } from "@/components/forms/form-field";
 import {
   Plus,
   Pencil,
   Trash2,
   Shield,
-  ChevronDown,
-  ChevronRight,
   Search,
-  Users,
+  Key,
   Lock,
+  SlidersHorizontal,
+  X,
+  ChevronsLeft,
+  ChevronsRight,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Loader2,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-interface RoleFormData {
-  name: string;
-  description: string;
-  status: "active" | "inactive";
-  permissionIds: string[];
-}
-
-const emptyForm: RoleFormData = {
-  name: "",
-  description: "",
-  status: "active",
-  permissionIds: [],
-};
+const PAGE_SIZE_OPTIONS = [5, 10, 25, 50, 100];
 
 export default function RolesPage() {
+  const router = useRouter();
   const { toast } = useToast();
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingRole, setEditingRole] = useState<Role | null>(null);
-  const [form, setForm] = useState<RoleFormData>(emptyForm);
-  const [errors, setErrors] = useState<Partial<Record<keyof RoleFormData, string>>>({});
-  const [saving, setSaving] = useState(false);
+  const [roles, setRoles] = useState<RoleItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+
+  const [stats, setStats] = useState<{ total: number; active: number; inactive: number; protected: number } | null>(null);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deletingRole, setDeletingRole] = useState<Role | null>(null);
+  const [deletingRole, setDeletingRole] = useState<RoleItem | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
-  const [permissionSearch, setPermissionSearch] = useState("");
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    setCurrentPage(1);
+  }, [debouncedSearch, statusFilter, pageSize]);
 
-  function loadData() {
+  const fetchRoles = useCallback(async () => {
     try {
-      setRoles(RoleService.getAll());
+      setLoading(true);
+      const params: Record<string, unknown> = {
+        page: currentPage,
+        size: pageSize,
+      };
+      if (debouncedSearch) params.search = debouncedSearch;
+      if (statusFilter === "active") params.is_active = true;
+      if (statusFilter === "inactive") params.is_active = false;
+
+      const res = await roleService.getAll(params as { search?: string; is_active?: boolean; page?: number; size?: number });
+      if (res.data.status === "success" && res.data.data) {
+        setRoles(res.data.data.items);
+        setTotalCount(res.data.data.pagination.total_count);
+        setTotalPages(res.data.data.pagination.total_pages);
+      }
+    } catch {
+      toast("Failed to load roles", "error");
     } finally {
       setLoading(false);
     }
-  }
+  }, [currentPage, pageSize, debouncedSearch, statusFilter, toast]);
 
-  const userCounts = useMemo(() => {
-    const users = UserService.getAll();
-    const counts: Record<string, number> = {};
-    users.forEach((u) => {
-      counts[u.roleId] = (counts[u.roleId] || 0) + 1;
-    });
-    return counts;
-  }, [roles]);
+  useEffect(() => {
+    fetchRoles();
+  }, [fetchRoles]);
 
-  const filteredPermissionGroups = useMemo(() => {
-    if (!permissionSearch.trim()) return PERMISSION_GROUPS;
-    const lower = permissionSearch.toLowerCase();
-    return PERMISSION_GROUPS.map((group) => ({
-      ...group,
-      permissions: group.permissions.filter(
-        (p) =>
-          p.name.toLowerCase().includes(lower) ||
-          p.description.toLowerCase().includes(lower)
-      ),
-    })).filter((group) => group.permissions.length > 0);
-  }, [permissionSearch]);
-
-  const totalPermissions = useMemo(
-    () => PERMISSION_GROUPS.reduce((acc, g) => acc + g.permissions.length, 0),
-    []
-  );
-
-  function toggleGroupExpand(name: string) {
-    setExpandedGroups((prev) => ({ ...prev, [name]: !prev[name] }));
-  }
-
-  function toggleGroupSelectAll(groupName: string) {
-    const group = PERMISSION_GROUPS.find((g) => g.name === groupName);
-    if (!group) return;
-    const groupPermIds = group.permissions.map((p) => p.id);
-    const allSelected = groupPermIds.every((id) => form.permissionIds.includes(id));
-
-    setForm((prev) => {
-      if (allSelected) {
-        return {
-          ...prev,
-          permissionIds: prev.permissionIds.filter((id) => !groupPermIds.includes(id)),
-        };
-      }
-      return {
-        ...prev,
-        permissionIds: [...new Set([...prev.permissionIds, ...groupPermIds])],
-      };
-    });
-  }
-
-  function togglePermission(permissionId: string) {
-    setForm((prev) => {
-      const exists = prev.permissionIds.includes(permissionId);
-      return {
-        ...prev,
-        permissionIds: exists
-          ? prev.permissionIds.filter((id) => id !== permissionId)
-          : [...prev.permissionIds, permissionId],
-      };
-    });
-  }
-
-  function selectAllPermissions() {
-    const allIds = PERMISSION_GROUPS.flatMap((g) => g.permissions.map((p) => p.id));
-    setForm((prev) => ({ ...prev, permissionIds: allIds }));
-  }
-
-  function clearAllPermissions() {
-    setForm((prev) => ({ ...prev, permissionIds: [] }));
-  }
-
-  function isGroupSelected(groupName: string): boolean {
-    const group = PERMISSION_GROUPS.find((g) => g.name === groupName);
-    if (!group) return false;
-    return group.permissions.every((p) => form.permissionIds.includes(p.id));
-  }
-
-  function isGroupIndeterminate(groupName: string): boolean {
-    const group = PERMISSION_GROUPS.find((g) => g.name === groupName);
-    if (!group) return false;
-    const selected = group.permissions.filter((p) => form.permissionIds.includes(p.id));
-    return selected.length > 0 && selected.length < group.permissions.length;
-  }
-
-  function openCreate() {
-    setEditingRole(null);
-    setForm(emptyForm);
-    setErrors({});
-    setPermissionSearch("");
-    setExpandedGroups({});
-    setDialogOpen(true);
-  }
-
-  function openEdit(role: Role) {
-    setEditingRole(role);
-    setForm({
-      name: role.name,
-      description: role.description,
-      status: role.status,
-      permissionIds: [...role.permissionIds],
-    });
-    setErrors({});
-    setPermissionSearch("");
-    setExpandedGroups({});
-    setDialogOpen(true);
-  }
-
-  function validate(): boolean {
-    const errs: Partial<Record<keyof RoleFormData, string>> = {};
-    if (!form.name.trim()) errs.name = "Name is required";
-    if (form.permissionIds.length === 0) errs.permissionIds = "At least one permission is required";
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
-  }
-
-  function handleSave() {
-    if (!validate()) return;
-    setSaving(true);
+  const fetchStats = useCallback(async () => {
     try {
-      if (editingRole) {
-        RoleService.update(editingRole.id, {
-          name: form.name.trim(),
-          description: form.description.trim(),
-          status: form.status,
-          permissionIds: form.permissionIds,
-        });
-        toast("Role updated successfully", "success");
-      } else {
-        RoleService.create({
-          name: form.name.trim(),
-          description: form.description.trim(),
-          status: form.status,
-          permissionIds: form.permissionIds,
-        });
-        toast("Role created successfully", "success");
-      }
-      loadData();
-      setDialogOpen(false);
-    } catch {
-      toast("An error occurred", "error");
-    } finally {
-      setSaving(false);
-    }
-  }
+      const res = await roleService.stats();
+      if (res.data.status === "success") setStats(res.data.data);
+    } catch { /* non-critical */ }
+  }, []);
 
-  function confirmDelete(role: Role) {
+  useEffect(() => { fetchStats(); }, [fetchStats]);
+
+  function confirmDelete(role: RoleItem) {
     setDeletingRole(role);
     setDeleteDialogOpen(true);
   }
 
-  function handleDelete() {
+  async function handleDelete() {
     if (!deletingRole) return;
-    const count = userCounts[deletingRole.id] || 0;
-    if (count > 0) {
-      toast(
-        `Cannot delete role "${deletingRole.name}" - ${count} user(s) are assigned to it.`,
-        "error"
-      );
+    if (deletingRole.is_protected) {
+      toast("Cannot delete a protected role", "error");
       setDeleteDialogOpen(false);
       setDeletingRole(null);
       return;
     }
     setDeleting(true);
     try {
-      RoleService.remove(deletingRole.id);
-      toast("Role deleted successfully", "success");
-      loadData();
-    } catch {
-      toast("An error occurred", "error");
+      const res = await roleService.delete(deletingRole.id);
+      if (res.data.status === "success") {
+        toast(res.data.message || "Role deleted successfully", "success");
+        fetchRoles();
+        fetchStats();
+      } else {
+        toast(res.data.message || "Failed to delete role", "error");
+      }
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string } }; message?: string };
+      const message = axiosErr.response?.data?.message || axiosErr.message || "An error occurred";
+      toast(message, "error");
     } finally {
       setDeleting(false);
       setDeleteDialogOpen(false);
@@ -250,26 +137,163 @@ export default function RolesPage() {
     }
   }
 
+  const startItem = (currentPage - 1) * pageSize + 1;
+  const endItem = Math.min(currentPage * pageSize, totalCount);
+
+  function getPageNumbers(): (number | "...")[] {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    const pages: (number | "...")[] = [1];
+    if (currentPage > 3) pages.push("...");
+    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+      pages.push(i);
+    }
+    if (currentPage < totalPages - 2) pages.push("...");
+    pages.push(totalPages);
+    return pages;
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Roles"
         description="Define roles and manage permission assignments for system access control"
-        breadcrumbs={[{ label: "Dashboard" }, { label: "Roles" }]}
+        breadcrumbs={[{ label: "Dashboard", onClick: () => router.push("/dashboard") }, { label: "Roles" }]}
         actions={
-          <Button onClick={openCreate}>
+          <Button onClick={() => router.push("/roles/create")}>
             <Plus className="mr-2 h-4 w-4" />
             Create Role
           </Button>
         }
       />
 
-      {roles.length === 0 && !loading ? (
+      {/* Stats Cards */}
+      {stats && (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <Card>
+            <CardContent className="flex items-center gap-3 p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
+                <Shield className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.total}</p>
+                <p className="text-xs text-gray-500">Total Roles</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="flex items-center gap-3 p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30">
+                <Shield className="h-5 w-5 text-green-600 dark:text-green-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.active}</p>
+                <p className="text-xs text-gray-500">Active</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="flex items-center gap-3 p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900/30">
+                <Shield className="h-5 w-5 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.inactive}</p>
+                <p className="text-xs text-gray-500">Inactive</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="flex items-center gap-3 p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                <Lock className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.protected}</p>
+                <p className="text-xs text-gray-500">Protected</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Search + Filters */}
+      <Card className="p-4">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Input
+                placeholder="Search roles by name or description..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9"
+              />
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowFilters(!showFilters)}
+                className={cn("relative min-w-[120px]", showFilters && "border-[#FF6B00] text-[#FF6B00]")}
+              >
+                <SlidersHorizontal className="mr-1.5 h-4 w-4" />
+                Filters
+                {statusFilter && (
+                  <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#FF6B00] text-[10px] text-white">
+                    1
+                  </span>
+                )}
+              </Button>
+              {statusFilter && (
+                <Button variant="ghost" size="sm" onClick={() => setStatusFilter("")}>
+                  <X className="mr-1 h-3 w-3" />
+                  Clear
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {showFilters && (
+            <div className="border-t border-gray-100 pt-4 dark:border-gray-800">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-gray-500 dark:text-gray-400">Status</label>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="flex h-9 w-full appearance-none rounded-lg border border-gray-300 bg-white px-3 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                  >
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {statusFilter && (
+            <div className="flex flex-wrap gap-2 border-t border-gray-100 pt-3 dark:border-gray-800">
+              <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                Status: {statusFilter}
+                <button type="button" onClick={() => setStatusFilter("")} className="ml-0.5 rounded-full p-0.5 hover:bg-gray-200 dark:hover:bg-gray-700">
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            </div>
+          )}
+        </div>
+      </Card>
+
+      {/* Roles Grid */}
+      {loading ? (
+        <LoadingState message="Loading roles..." />
+      ) : roles.length === 0 ? (
         <EmptyState
           icon={<Shield className="h-8 w-8" />}
           title="No roles found"
           description="Create your first role to define access permissions."
-          action={{ label: "Create Role", onClick: openCreate }}
+          action={{ label: "Create Role", onClick: () => router.push("/roles/create") }}
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -280,42 +304,45 @@ export default function RolesPage() {
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FFF3EB] text-[#FF6B00] dark:bg-[#E55A00]/20 dark:text-[#FF9A5C]">
                     <Shield className="h-5 w-5" />
                   </div>
-                  <StatusBadge status={role.status} />
+                  <div className="flex items-center gap-2">
+                    {role.is_protected && (
+                      <Badge variant="secondary" className="bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400">
+                        <Lock className="mr-1 h-3 w-3" />
+                        Protected
+                      </Badge>
+                    )}
+                    <StatusBadge status={role.is_active ? "active" : "inactive"} />
+                  </div>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                  {role.name}
-                </h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{role.name}</h3>
                 <p className="mt-1 line-clamp-2 text-sm text-gray-500 dark:text-gray-400">
                   {role.description || "No description"}
                 </p>
                 <div className="mt-4 flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                   <div className="flex items-center gap-1">
-                    <Users className="h-4 w-4" />
-                    <span>{userCounts[role.id] || 0} user(s)</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Lock className="h-4 w-4" />
-                    <span>{role.permissionIds.length} permission(s)</span>
+                    <Key className="h-4 w-4" />
+                    <span>{role.permissions.length} permission(s)</span>
                   </div>
                 </div>
                 <div className="mt-4 flex items-center gap-2 border-t border-gray-100 pt-4 dark:border-gray-800">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => openEdit(role)}
-                    className="flex-1"
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => router.push(`/roles/${role.id}`)} className="flex-1">
+                    <Eye className="mr-1.5 h-3.5 w-3.5" />
+                    View
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => router.push(`/roles/${role.id}/edit`)} className="flex-1">
                     <Pencil className="mr-1.5 h-3.5 w-3.5" />
                     Edit
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => confirmDelete(role)}
-                    className="text-red-600 hover:text-red-700 dark:text-red-400"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
+                  {!role.is_protected && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => confirmDelete(role)}
+                      className="text-red-600 hover:text-red-700 dark:text-red-400"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
                 </div>
               </div>
             </Card>
@@ -323,160 +350,73 @@ export default function RolesPage() {
         </div>
       )}
 
-      {/* Create / Edit Dialog */}
-      <Dialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        title={editingRole ? "Edit Role" : "Create Role"}
-        className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col"
-        footer={
-          <>
-            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave} disabled={saving}>
-              {saving ? "Saving..." : editingRole ? "Update" : "Create"}
-            </Button>
-          </>
-        }
-      >
-        <div className="flex-1 overflow-y-auto space-y-5 pr-1">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <FormField label="Role Name" required error={errors.name}>
-              <Input
-                placeholder="Enter role name"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                error={!!errors.name}
-              />
-            </FormField>
-            <FormField label="Status" required>
-              <Select
-                value={form.status}
-                onChange={(e) =>
-                  setForm({ ...form, status: e.target.value as "active" | "inactive" })
-                }
-              >
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </Select>
-            </FormField>
-          </div>
-          <FormField label="Description">
-            <textarea
-              placeholder="Brief description of this role"
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="flex min-h-[80px] w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00] focus-visible:ring-offset-1 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-400"
-            />
-          </FormField>
-
-          {/* Permissions Section */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Permissions
-                </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  ({form.permissionIds.length} of {totalPermissions} selected)
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={selectAllPermissions} type="button">
-                  Select All
-                </Button>
-                <Button variant="ghost" size="sm" onClick={clearAllPermissions} type="button">
-                  Clear All
-                </Button>
+      {/* Pagination */}
+      {totalCount > 0 && (
+        <Card className="px-4 py-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Showing <span className="font-medium text-gray-700 dark:text-gray-300">{startItem}</span> to{" "}
+                <span className="font-medium text-gray-700 dark:text-gray-300">{endItem}</span> of{" "}
+                <span className="font-medium text-gray-700 dark:text-gray-300">{totalCount}</span> roles
+              </p>
+              <div className="flex items-center gap-1.5">
+                <label className="text-xs text-gray-500">Show</label>
+                <select
+                  value={pageSize}
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                  className="h-8 rounded-md border border-gray-300 bg-white px-2 text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                >
+                  {PAGE_SIZE_OPTIONS.map((size) => (
+                    <option key={size} value={size}>{size}</option>
+                  ))}
+                </select>
               </div>
             </div>
-
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <Input
-                placeholder="Search permissions..."
-                value={permissionSearch}
-                onChange={(e) => setPermissionSearch(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-
-            <div className="space-y-2 max-h-[300px] overflow-y-auto rounded-lg border border-gray-200 p-3 dark:border-gray-700">
-              {filteredPermissionGroups.map((group) => {
-                const expanded = expandedGroups[group.name] !== false;
-                return (
-                  <div key={group.name} className="rounded-lg border border-gray-100 dark:border-gray-800">
-                    <div className="flex items-center gap-2 px-3 py-2.5">
-                      <button
-                        type="button"
-                        onClick={() => toggleGroupExpand(group.name)}
-                        className="flex items-center gap-2 flex-1 text-left"
-                      >
-                        {expanded ? (
-                          <ChevronDown className="h-4 w-4 text-gray-400" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4 text-gray-400" />
-                        )}
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          {group.name}
-                        </span>
-                        <Badge variant="secondary" className="ml-1 text-xs">
-                          {group.permissions.length}
-                        </Badge>
-                      </button>
-                      <Checkbox
-                        checked={isGroupSelected(group.name)}
-                        indeterminate={isGroupIndeterminate(group.name)}
-                        onCheckedChange={() => toggleGroupSelectAll(group.name)}
-                      />
-                    </div>
-                    {expanded && (
-                      <div className="space-y-1 border-t border-gray-100 px-3 py-2 dark:border-gray-800">
-                        {group.permissions.map((perm) => (
-                          <label
-                            key={perm.id}
-                            className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                          >
-                            <Checkbox
-                              checked={form.permissionIds.includes(perm.id)}
-                              onCheckedChange={() => togglePermission(perm.id)}
-                            />
-                            <div className="flex-1">
-                              <span className="text-sm font-mono text-gray-700 dark:text-gray-300">
-                                {perm.name}
-                              </span>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">
-                                {perm.description}
-                              </p>
-                            </div>
-                          </label>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-              {filteredPermissionGroups.length === 0 && (
-                <p className="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                  No permissions match your search.
-                </p>
+            <div className="flex items-center gap-1">
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>
+                <ChevronsLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              {getPageNumbers().map((page, i) =>
+                page === "..." ? (
+                  <span key={`ellipsis-${i}`} className="px-1 text-sm text-gray-400">...</span>
+                ) : (
+                  <Button
+                    key={page}
+                    variant={currentPage === page ? "default" : "outline"}
+                    size="icon"
+                    className={cn("h-8 w-8", currentPage === page && "bg-[#FF6B00] text-white hover:bg-[#E55A00]")}
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </Button>
+                )
               )}
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages}>
+                <ChevronsRight className="h-4 w-4" />
+              </Button>
             </div>
           </div>
-        </div>
-      </Dialog>
+        </Card>
+      )}
 
       {/* Delete Confirmation */}
       <ConfirmDialog
         open={deleteDialogOpen}
-        onClose={() => {
-          setDeleteDialogOpen(false);
-          setDeletingRole(null);
-        }}
+        onClose={() => { setDeleteDialogOpen(false); setDeletingRole(null); }}
         onConfirm={handleDelete}
         title="Delete Role"
-        description={`Are you sure you want to delete "${deletingRole?.name}"? This action cannot be undone.`}
+        description={
+          deletingRole?.is_protected
+            ? `Cannot delete "${deletingRole?.name}" — it is a protected role.`
+            : `Are you sure you want to delete "${deletingRole?.name}"? This action cannot be undone.`
+        }
         confirmLabel="Delete"
         loading={deleting}
       />

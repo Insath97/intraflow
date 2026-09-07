@@ -1,19 +1,18 @@
 import {
   LayoutDashboard,
   Users,
-  UserPlus,
   MapPin,
   ShieldCheck,
   Lock,
   ClipboardList,
   Settings,
-  Heart,
   BarChart3,
   Building,
   Activity,
   Calendar,
   FileText,
   Bell,
+  Package,
 } from "lucide-react";
 
 export interface NavItem {
@@ -40,12 +39,22 @@ export const navigation: NavGroup[] = [
     ],
   },
   {
-    title: "PEOPLE",
+    title: "PROJECTS & TASKS",
     items: [
       {
-        label: "Persons",
-        href: "/persons",
-        icon: Heart,
+        label: "Projects",
+        href: "/projects",
+        icon: FileText,
+      },
+      {
+        label: "Modules",
+        href: "/modules",
+        icon: Package,
+      },
+      {
+        label: "Daily Updates",
+        href: "/daily-updates",
+        icon: Calendar,
       },
     ],
   },
@@ -61,21 +70,6 @@ export const navigation: NavGroup[] = [
         label: "Territories",
         href: "/territories",
         icon: MapPin,
-      },
-    ],
-  },
-  {
-    title: "PROJECTS & TASKS",
-    items: [
-      {
-        label: "Projects",
-        href: "/projects",
-        icon: FileText,
-      },
-      {
-        label: "Daily Updates",
-        href: "/daily-updates",
-        icon: Calendar,
       },
     ],
   },

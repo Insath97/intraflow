@@ -1,9 +1,120 @@
-import type { Role } from '@/types';
-import { generateId } from '@/lib/utils';
+import api from "@/lib/api/axios-client";
+import type { Role } from "@/types";
+import { generateId } from "@/lib/utils";
 
-const STORAGE_KEY = 'mis_roles';
+// ============================================
+// API-based Role Service (new)
+// ============================================
 
-function getAll(): Role[] {
+export interface RoleItem {
+  id: string;
+  name: string;
+  description: string | null;
+  is_protected: boolean;
+  is_active: boolean;
+  permissions: Array<{
+    id: string;
+    group_name: string;
+    permission_name: string;
+    display_name: string;
+  }>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RoleSimple {
+  id: string;
+  name: string;
+  description: string | null;
+}
+
+export interface RoleStats {
+  total: number;
+  active: number;
+  inactive: number;
+  protected: number;
+  total_permissions_assigned: number;
+}
+
+export interface RolePagination {
+  current_page: number;
+  per_page: number;
+  total_pages: number;
+  total_count: number;
+  has_next: boolean;
+  has_prev: boolean;
+}
+
+export interface ApiResponse<T = unknown> {
+  status: string;
+  message: string;
+  data: T;
+}
+
+export interface RoleCreatePayload {
+  name: string;
+  description?: string;
+  permission_ids: string[];
+}
+
+export interface RoleUpdatePayload {
+  name?: string;
+  description?: string;
+  permission_ids?: string[];
+  is_active?: boolean;
+}
+
+export const roleService = {
+  getAll: (params?: {
+    search?: string;
+    is_active?: boolean;
+    sort_by?: string;
+    sort_order?: string;
+    page?: number;
+    size?: number;
+  }) => {
+    const q = new URLSearchParams();
+    if (params?.search) q.set("search", params.search);
+    if (params?.is_active !== undefined) q.set("is_active", String(params.is_active));
+    if (params?.sort_by) q.set("sort_by", params.sort_by);
+    if (params?.sort_order) q.set("sort_order", params.sort_order);
+    if (params?.page) q.set("page", String(params.page));
+    if (params?.size) q.set("size", String(params.size));
+    const qs = q.toString();
+    return api.get<ApiResponse<{ items: RoleItem[]; pagination: RolePagination }>>(
+      `/roles${qs ? `?${qs}` : ""}`
+    );
+  },
+
+  getById: (id: string) =>
+    api.get<ApiResponse<RoleItem>>(`/roles/${id}`),
+
+  list: () =>
+    api.get<ApiResponse<RoleSimple[]>>("/roles/list"),
+
+  stats: () =>
+    api.get<ApiResponse<RoleStats>>("/roles/stats"),
+
+  create: (data: RoleCreatePayload) =>
+    api.post<ApiResponse<RoleItem>>("/roles", data),
+
+  update: (id: string, data: RoleUpdatePayload) =>
+    api.put<ApiResponse<RoleItem>>(`/roles/${id}`, data),
+
+  delete: (id: string) =>
+    api.delete<ApiResponse<null>>(`/roles/${id}`),
+
+  bulkDelete: (ids: string[]) =>
+    api.post<ApiResponse<{ deleted: number; skipped: number }>>("/roles/bulk-delete", { ids }),
+};
+
+// ============================================
+// Legacy localStorage Role Service (for users page backward compat)
+// ============================================
+
+const STORAGE_KEY = "mis_roles";
+
+function legacyGetAll(): Role[] {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
     return data ? JSON.parse(data) : [];
@@ -12,17 +123,8 @@ function getAll(): Role[] {
   }
 }
 
-function getById(id: string): Role | null {
-  try {
-    const roles = getAll();
-    return roles.find((r) => r.id === id) || null;
-  } catch {
-    return null;
-  }
-}
-
-function create(role: Omit<Role, 'id' | 'createdAt' | 'updatedAt'>): Role {
-  const roles = getAll();
+function legacyCreate(role: Omit<Role, "id" | "createdAt" | "updatedAt">): Role {
+  const roles = legacyGetAll();
   const now = new Date().toISOString();
   const newRole: Role = {
     ...role,
@@ -35,57 +137,7 @@ function create(role: Omit<Role, 'id' | 'createdAt' | 'updatedAt'>): Role {
   return newRole;
 }
 
-function update(id: string, data: Partial<Role>): Role | null {
-  const roles = getAll();
-  const index = roles.findIndex((r) => r.id === id);
-  if (index === -1) return null;
-  const updated: Role = {
-    ...roles[index],
-    ...data,
-    id,
-    updatedAt: new Date().toISOString(),
-  };
-  roles[index] = updated;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(roles));
-  return updated;
-}
-
-function remove(id: string): boolean {
-  const roles = getAll();
-  const filtered = roles.filter((r) => r.id !== id);
-  if (filtered.length === roles.length) return false;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
-  return true;
-}
-
-function search(query: string): Role[] {
-  try {
-    const roles = getAll();
-    const lower = query.toLowerCase();
-    return roles.filter(
-      (r) =>
-        r.name.toLowerCase().includes(lower) ||
-        r.description.toLowerCase().includes(lower)
-    );
-  } catch {
-    return [];
-  }
-}
-
-function getActive(): Role[] {
-  try {
-    return getAll().filter((r) => r.status === 'active');
-  } catch {
-    return [];
-  }
-}
-
 export const RoleService = {
-  getAll,
-  getById,
-  create,
-  update,
-  remove,
-  search,
-  getActive,
+  getAll: legacyGetAll,
+  create: legacyCreate,
 };
