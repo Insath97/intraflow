@@ -31,4 +31,16 @@ export type {
   TaskModule,
   SubtaskStatusType,
 } from "./tasks";
+export { dailyUpdateService, WORK_TYPE_OPTIONS, WORK_LOCATION_OPTIONS, WORK_TYPE_COLORS, WORK_LOCATION_COLORS } from "./daily-updates";
+export type {
+  DailyUpdateItem,
+  DailyUpdateCreate,
+  DailyUpdateUpdate,
+  DailyUpdateListResponse,
+  DailyUpdateStats,
+  WorkEntryInput,
+  WorkEntryResponse,
+  WorkType,
+  WorkLocation,
+} from "./daily-updates";
 export type { ApiResponse, PaginatedResponse } from "./users";
