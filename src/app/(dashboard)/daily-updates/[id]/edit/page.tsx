@@ -214,11 +214,11 @@ export default function EditDailyUpdatePage({ params }: { params: Promise<{ id: 
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Blockers</label>
-                  <Input placeholder="Any blockers?" value={form.blockers} onChange={(e) => setForm({ ...form, blockers: e.target.value })} />
+                  <textarea placeholder="Any blockers?" value={form.blockers} onChange={(e) => setForm({ ...form, blockers: e.target.value })} rows={2} className="flex w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00] dark:border-white/10 dark:bg-[#1A1D2E] dark:text-gray-100" />
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Tomorrow&apos;s Plan</label>
-                  <Input placeholder="Plan for tomorrow?" value={form.tomorrow_plan} onChange={(e) => setForm({ ...form, tomorrow_plan: e.target.value })} />
+                  <textarea placeholder="Plan for tomorrow?" value={form.tomorrow_plan} onChange={(e) => setForm({ ...form, tomorrow_plan: e.target.value })} rows={2} className="flex w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00] dark:border-white/10 dark:bg-[#1A1D2E] dark:text-gray-100" />
                 </div>
               </div>
             </CardContent>
