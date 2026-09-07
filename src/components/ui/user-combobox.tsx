@@ -99,15 +99,17 @@ export function UserCombobox({
   }, [users, search, excludeSet]);
 
   React.useEffect(() => {
+    let cancelled = false;
     async function load() {
       try {
         setLoading(true);
         const res = await usersApi.simple(true);
-        if (res.data.status === "success") setUsers(res.data.data);
+        if (!cancelled && res.data.status === "success") setUsers(res.data.data);
       } catch { /* ignore */ }
-      finally { setLoading(false); }
+      finally { if (!cancelled) setLoading(false); }
     }
     load();
+    return () => { cancelled = true; };
   }, []);
 
   function updateDropdownPos() {

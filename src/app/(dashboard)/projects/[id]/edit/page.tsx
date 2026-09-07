@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { projectService, type ProjectItem, type ProjectStatus, type ProjectType, type ProjectPriority } from "@/lib/api/projects";
-import { usersApi, type UserItem } from "@/lib/api/users";
+import { usersApi, type UserSimple } from "@/lib/api/users";
 import { useToast } from "@/components/ui/toast";
 import { PageHeader } from "@/components/common/page-header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -92,15 +92,17 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
   });
   const [errors, setErrors] = useState<Partial<Record<keyof ProjectFormData, string>>>({});
   const [saving, setSaving] = useState(false);
-  const [users, setUsers] = useState<UserItem[]>([]);
+  const [users, setUsers] = useState<UserSimple[]>([]);
+  const loadedRef = useRef(false);
 
   useEffect(() => {
+    if (loadedRef.current) return;
     async function loadProject() {
       try {
         setLoading(true);
         const [projectRes, usersRes] = await Promise.all([
           projectService.getById(id),
-          usersApi.getAll({ is_active: true, size: 200 }),
+          usersApi.simple(true),
         ]);
         if (projectRes.data.status === "success") {
           const p = projectRes.data.data;
@@ -120,13 +122,14 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
         } else {
           setError("Failed to load project");
         }
-        if (usersRes.data.status === "success") setUsers(usersRes.data.data.items);
+        if (usersRes.data.status === "success") setUsers(usersRes.data.data);
       } catch {
         setError("Failed to load project");
       } finally {
         setLoading(false);
       }
     }
+    loadedRef.current = true;
     loadProject();
   }, [id]);
 

@@ -1,7 +1,6 @@
 import {
   LayoutDashboard,
   Users,
-  MapPin,
   ShieldCheck,
   Lock,
   ClipboardList,
@@ -71,11 +70,6 @@ export const navigation: NavGroup[] = [
         label: "Departments",
         href: "/departments",
         icon: Building,
-      },
-      {
-        label: "Territories",
-        href: "/territories",
-        icon: MapPin,
       },
     ],
   },
