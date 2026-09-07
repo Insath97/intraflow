@@ -13,6 +13,7 @@ import {
   FileText,
   Bell,
   Package,
+  ListTodo,
 } from "lucide-react";
 
 export interface NavItem {
@@ -50,6 +51,11 @@ export const navigation: NavGroup[] = [
         label: "Modules",
         href: "/modules",
         icon: Package,
+      },
+      {
+        label: "Tasks",
+        href: "/tasks",
+        icon: ListTodo,
       },
       {
         label: "Daily Updates",

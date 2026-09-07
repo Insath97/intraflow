@@ -14,4 +14,21 @@ export { projectService } from "./projects";
 export type { ProjectItem, ProjectStats, ProjectListResponse, ProjectListParams, ProjectStatus, ProjectType, ProjectPriority, ProjectMember } from "./projects";
 export { moduleService } from "./modules";
 export type { ModuleItem, ModuleListParams, ModuleCreateData, ModuleUpdateData } from "./modules";
+export { taskService, STATUS_COLORS, PRIORITY_COLORS } from "./tasks";
+export type {
+  TaskItem,
+  TaskStatus,
+  TaskPriority,
+  TaskListParams,
+  TaskListResponse,
+  TaskCreateData,
+  TaskUpdateData,
+  TaskStats,
+  SubtaskItem,
+  CommentItem,
+  TaskUser,
+  TaskProject,
+  TaskModule,
+  SubtaskStatusType,
+} from "./tasks";
 export type { ApiResponse, PaginatedResponse } from "./users";
