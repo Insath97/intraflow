@@ -182,7 +182,7 @@ export default function CreateDailyUpdatePage() {
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-5xl mx-auto p-6 space-y-6 pb-24">
+        <div className="p-6 space-y-6 pb-24">
           {/* Top bar: date + blockers + plan */}
           <Card>
             <CardContent className="p-5">
@@ -289,7 +289,7 @@ export default function CreateDailyUpdatePage() {
 
       {/* Sticky bottom bar */}
       <div className="shrink-0 border-t border-gray-200 bg-white/80 backdrop-blur-sm dark:border-white/10 dark:bg-[#0F1117]/80">
-        <div className="max-w-5xl mx-auto flex items-center justify-between px-6 py-4">
+        <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-4 text-sm">
             <span className="text-gray-500 dark:text-gray-400">{workEntries.length} {workEntries.length === 1 ? "entry" : "entries"}</span>
             <span className="font-semibold text-[#FF6B00]">{totalHours.toFixed(1)}h total</span>
