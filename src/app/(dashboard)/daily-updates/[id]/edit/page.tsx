@@ -117,7 +117,7 @@ export default function EditDailyUpdatePage({ params }: { params: Promise<{ id: 
   const [loadingTasks, setLoadingTasks] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState(false);
 
-  const [form, setForm] = useState({ blockers: "", tomorrow_plan: "" });
+  const [form, setForm] = useState({ summary: "", blockers: "", tomorrow_plan: "" });
   const [workEntries, setWorkEntries] = useState<WorkEntryRow[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -128,7 +128,7 @@ export default function EditDailyUpdatePage({ params }: { params: Promise<{ id: 
         if (duRes.data.status === "success") {
           const d = duRes.data.data;
           setItem(d);
-          setForm({ blockers: d.blockers || "", tomorrow_plan: d.tomorrow_plan || "" });
+          setForm({ summary: d.summary || "", blockers: d.blockers || "", tomorrow_plan: d.tomorrow_plan || "" });
           setWorkEntries(d.work_entries.length > 0 ? d.work_entries.map((we) => ({
             project_id: we.project_id, task_id: we.task_id || "",
             work_type: we.work_type as WorkType, location: we.location as WorkLocation,
@@ -182,6 +182,7 @@ export default function EditDailyUpdatePage({ params }: { params: Promise<{ id: 
       }));
       const res = await dailyUpdateService.update(id, {
         update_date: item!.update_date,
+        summary: form.summary || undefined,
         blockers: form.blockers || undefined,
         tomorrow_plan: form.tomorrow_plan || undefined,
         work_entries: entries.length > 0 ? entries : undefined,
@@ -204,21 +205,25 @@ export default function EditDailyUpdatePage({ params }: { params: Promise<{ id: 
 
       <div className="flex-1 overflow-y-auto">
         <div className="p-6 space-y-6 pb-24">
-          {/* Top bar: date (read-only) + blockers + plan */}
+          {/* Top bar: date + summary + blockers + plan */}
           <Card>
-            <CardContent className="p-5">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Date</label>
-                  <div className="flex h-10 items-center rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm text-gray-500 dark:border-white/10 dark:bg-white/5 dark:text-gray-400"><Clock className="mr-2 h-4 w-4" />{new Date(item.update_date).toLocaleDateString()}</div>
-                </div>
+            <CardContent className="p-5 space-y-4">
+              <div className="w-48">
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Date</label>
+                <div className="flex h-10 items-center rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm text-gray-500 dark:border-white/10 dark:bg-white/5 dark:text-gray-400"><Clock className="mr-2 h-4 w-4" />{new Date(item.update_date).toLocaleDateString()}</div>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Summary</label>
+                <textarea placeholder="What did you work on today?" value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} rows={3} className="flex w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00] dark:border-white/10 dark:bg-[#1A1D2E] dark:text-gray-100" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Blockers</label>
-                  <textarea placeholder="Any blockers?" value={form.blockers} onChange={(e) => setForm({ ...form, blockers: e.target.value })} rows={2} className="flex w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00] dark:border-white/10 dark:bg-[#1A1D2E] dark:text-gray-100" />
+                  <textarea placeholder="Any blockers or impediments?" value={form.blockers} onChange={(e) => setForm({ ...form, blockers: e.target.value })} rows={2} className="flex w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00] dark:border-white/10 dark:bg-[#1A1D2E] dark:text-gray-100" />
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Tomorrow&apos;s Plan</label>
-                  <textarea placeholder="Plan for tomorrow?" value={form.tomorrow_plan} onChange={(e) => setForm({ ...form, tomorrow_plan: e.target.value })} rows={2} className="flex w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00] dark:border-white/10 dark:bg-[#1A1D2E] dark:text-gray-100" />
+                  <textarea placeholder="What&apos;s planned for tomorrow?" value={form.tomorrow_plan} onChange={(e) => setForm({ ...form, tomorrow_plan: e.target.value })} rows={2} className="flex w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00] dark:border-white/10 dark:bg-[#1A1D2E] dark:text-gray-100" />
                 </div>
               </div>
             </CardContent>
